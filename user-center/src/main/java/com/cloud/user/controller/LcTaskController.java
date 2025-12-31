@@ -791,7 +791,7 @@ public class LcTaskController {
             Map<String, String> dataMap = new LinkedHashMap<>();
             dataMap.put("index", "序号");
             dataMap.put("name", "任务名称");
-            dataMap.put("typeName", "工作类别");
+            dataMap.put("typeName", "任务类别");
             dataMap.put("content", "主要工作内容");
             dataMap.put("planStartTime", "计划开始时间");
             dataMap.put("planEndTime", "计划结束时间");

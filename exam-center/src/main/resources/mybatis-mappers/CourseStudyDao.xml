@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cloud.exam.dao.CourseStudyDao">
+
+    <!--查询学生一周的课程列表-->
+    <select id="findCourseByStudentId" resultType="com.cloud.exam.model.course.CourseStudy">
+        SELECT
+        cs.*
+        FROM
+        course_study cs
+        INNER JOIN
+        course_user_rel cul
+        on cs.id = cul.course_id
+        where
+        1 = 1
+        AND cs.start_time BETWEEN #{d1}::timestamp AND #{d2}::timestamp
+        AND cul.user_id= #{userId}
+        order by cs.id asc
+    </select>
+
+    <select id="findCourseByStudentIdDM" resultType="com.cloud.exam.model.course.CourseStudy">
+        SELECT
+        cs.*
+        FROM
+        course_study cs
+        INNER JOIN
+        course_user_rel cul
+        on cs.id = cul.course_id
+        where
+        1 = 1
+        AND cs.start_time BETWEEN #{d1} AND #{d2}
+        AND cul.user_id= #{userId}
+        order by cs.id asc
+    </select>
+
+
+</mapper>
+
+

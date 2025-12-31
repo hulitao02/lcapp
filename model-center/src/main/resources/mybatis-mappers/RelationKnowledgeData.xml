@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cloud.model.dao.RelationKnowledgeDataDao">
+
+
+    <!-- 查询知识关系属性数据-->
+    <select id="getList" parameterType="map" resultType="map">
+        SELECT
+        *
+        FROM
+        relation_knowledge_data
+        WHERE
+        1 = 1
+        AND kp_code =#{kpCode}
+        AND model_data_id = #{modelDataId}
+    </select>
+
+
+</mapper>

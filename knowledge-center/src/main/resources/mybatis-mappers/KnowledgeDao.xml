@@ -1,0 +1,721 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cloud.knowledge.dao.KnowledgeDao">
+
+    <select id="getTree" parameterType="long" resultType="map">
+        WITH RECURSIVE dict AS ( SELECT * FROM ontology_class WHERE label= 'root' UNION ALL SELECT ontology_class.* FROM
+        ontology_class, dict WHERE ontology_class.super_class_id= dict.id )
+        SELECT id ,
+        name as pointname,
+        label as label,
+        super_class_id as parentid
+        FROM
+        dict
+    </select>
+
+    <select id="getKnowledgeBind" parameterType="list" resultType="map">
+        WITH RECURSIVE r AS (
+        SELECT
+        *
+        FROM
+        ontology_class
+        WHERE
+        id IN
+        <foreach collection="idsList" item="id" index="index" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+        UNION ALL
+        SELECT T
+        .*
+        FROM
+        ontology_class T,
+        r
+        WHERE
+        T.id = r.super_class_id
+        ) SELECT DISTINCT id
+        ,
+        name as pointname,
+        super_class_id as parentid
+        FROM
+        r
+        ORDER BY
+        parentid
+    </select>
+
+    <select id="getRootPoint" resultType="map">
+        SELECT * from
+        ontology_class
+        WHERE
+        1 = 1
+        AND label = 'root'
+    </select>
+
+    <select id="getKnowledgePointsById" resultType="map" parameterType="map">
+        SELECT * from
+        ontology_class
+        WHERE
+        1 = 1
+        AND id = #{id}
+    </select>
+
+    <select id="getKpGroup" parameterType="string" resultType="map">
+        SELECT ID ,
+        NAME
+        FROM
+        ontology_category
+        WHERE
+        1 = 1
+        AND category IN (
+        WITH RECURSIVE r AS (
+        SELECT
+        *
+        FROM
+        ontology_class
+        WHERE
+        ID = #{kpId} UNION ALL
+        SELECT T
+        .*
+        FROM
+        ontology_class T,
+        r
+        WHERE
+        T.ID = r.super_class_id
+        ) SELECT DISTINCT ID
+        FROM
+        r
+        )
+        AND TYPE = 'category_property'
+    </select>
+
+    <select id="getGroupPro" parameterType="map" resultType="map">
+        SELECT
+        *
+        FROM
+        ontology_category
+        WHERE
+        1 = 1
+        and parent_id=#{groupId}
+        and type='data_property'
+    </select>
+
+    <select id="getAllKnowledgeListByPointId" parameterType="string" resultType="map">
+        SELECT
+        *
+        FROM
+        ontology_individual
+        WHERE
+        1 = 1
+        AND class_id = #{kpId}
+    </select>
+
+    <select id="getProDetail" parameterType="map" resultType="map">
+        SELECT
+        id,name
+        FROM
+        ontology_category
+        WHERE
+        1 = 1
+        AND id=#{id}
+    </select>
+
+    <select id="getProValue" parameterType="map" resultType="map">
+        SELECT
+        pro.ID,
+        pro.NAME,
+        pdata.ID as data_id,
+        pdata.data_property_value
+        FROM
+        ontology_individual_dp AS pdata,
+        ontology_category AS pro
+        WHERE
+        1 = 1
+        AND individual_id = #{knowledgeId}
+        AND pro.ID = #{proId}
+        AND pro.property_id = pdata.data_property_id
+    </select>
+
+
+    <select id="getProByPar" parameterType="map" resultType="map">
+        SELECT
+        *
+        FROM
+        ontology_individual_dp
+        WHERE
+        individual_id = #{knowledgeId}
+        AND data_property_id = #{proId}
+        limit 1
+    </select>
+
+
+    <select id="listKnowledgePage" parameterType="map" resultType="map">
+        select * from (
+        SELECT DISTINCT
+        knowledge.ID,
+        knowledge.NAME,
+        knowledge.class_id,
+        point.NAME AS point_name,
+        xx.score
+        FROM
+        ontology_individual AS knowledge,
+        ontology_class AS point,
+        xx_class as xx
+        WHERE
+        1 = 1
+        AND knowledge.class_id = point.ID
+        and knowledge.class_id=xx.class_id
+        <if test="kpIds != null and kpIds.size() > 0">
+            AND knowledge.class_id IN
+            <foreach collection="kpIds" item="kp" index="index" open="(" close=")" separator=",">
+                #{kp}
+            </foreach>
+        </if>
+        ) as a
+        where 1=1
+        <if test="sensesName != null and sensesName!='' ">
+            and (a.NAME like #{sensesName} or A.point_name like #{sensesName})
+        </if>
+        order by a.score
+        limit #{pageSize} OFFSET #{pageNo}
+    </select>
+
+    <select id="listKnowledgePageCount" parameterType="map" resultType="map">
+        SELECT count(DISTINCT knowledge.ID) as count
+        FROM
+        ontology_individual AS knowledge,
+        ontology_class AS point,
+        xx_class as xx
+        WHERE
+        1 = 1
+        AND knowledge.class_id = point.ID
+        and knowledge.class_id=xx.class_id
+        <if test="kpIds != null and kpIds.size() > 0">
+            AND knowledge.class_id IN
+            <foreach collection="kpIds" item="kp" index="index" open="(" close=")" separator=",">
+                #{kp}
+            </foreach>
+        </if>
+        <if test="sensesName != null and sensesName!='' ">
+            and (knowledge.NAME like #{sensesName} or point.NAME like #{sensesName})
+        </if>
+    </select>
+
+    <select id="getRelationGroup" parameterType="string" resultType="map">
+        SELECT
+        b.ID,
+        b.NAME
+        FROM
+        ontology_class_object_property AS A,
+        ontology_object_property AS b
+        WHERE
+        1 = 1
+        AND domain_class_id IN (
+        WITH RECURSIVE r AS (
+        SELECT
+        *
+        FROM
+        ontology_class
+        WHERE
+        ID = #{kpId} UNION ALL
+        SELECT T
+        .*
+        FROM
+        ontology_class T,
+        r
+        WHERE
+        T.ID = r.super_class_id
+        ) SELECT DISTINCT ID
+        FROM
+        r
+        )
+        AND A.object_property_id = b.ID
+    </select>
+
+    <select id="getRelationGroupById" parameterType="string" resultType="map">
+        SELECT
+        id,name
+        FROM
+        ontology_object_property
+        WHERE
+        1 = 1
+        AND id=#{id}
+    </select>
+
+    <select id="getRelationPro" parameterType="map" resultType="map">
+        SELECT DISTINCT
+        b.ID,
+        b.NAME
+        FROM
+        ontology_class_object_property AS A,
+        ontology_class AS b
+        WHERE
+        1 = 1
+        AND object_property_id = #{relationId}
+        AND A.range_class_id = b.ID
+    </select>
+
+    <select id="getRelationProVal" parameterType="map" resultType="map">
+        SELECT A
+        .ID,
+        A.NAME,
+        A.class_id,
+        b.data_property_id,
+        b.data_property_value,
+        C.NAME,
+        C.data_type
+        FROM
+        ontology_individual AS A,
+        ontology_individual_dp AS b,
+        ontology_data_property AS C
+        WHERE
+        1 = 1
+        AND A.ID = b.individual_id
+        AND b.data_property_id = C.ID
+        AND A.ID IN ( SELECT range_individual_id FROM ontology_individual_op WHERE domain_individual_id = #{knowledgeId}
+        AND object_property_id=#{proTypeCode} )
+        and A.id in (select individual_id from ontology_class_individual where class_id=#{proId})
+    </select>
+
+    <select id="getStepOne" parameterType="string" resultType="map">
+        SELECT
+        A.ID,
+        A.NAME,
+        A.class_id
+        FROM
+        ontology_individual AS A
+        WHERE
+        1 = 1
+        AND A.class_id = #{classId}
+    </select>
+
+    <select id="getStepTwo" parameterType="map" resultType="map">
+        SELECT
+        *
+        FROM
+        ontology_individual_op
+        WHERE
+        1 = 1
+        AND object_property_id = #{proTypeCode}
+        AND domain_individual_id = #{knowledgeId}
+        <if test="targetIds != null and targetIds.size() > 0">
+            AND range_individual_id IN
+            <foreach collection="targetIds" item="kp" index="index" open="(" close=")" separator=",">
+                #{kp}
+            </foreach>
+        </if>
+    </select>
+
+    <select id="getStepThree" parameterType="string" resultType="map">
+        SELECT
+        a.data_property_value ,
+        b.label,
+        b.name,b.type
+        FROM
+        ontology_individual_dp as a ,
+        ontology_data_property as b
+        WHERE
+        1 = 1
+        AND a.individual_id =#{targetKnowledgeId}
+        and a.data_property_id=b.id
+    </select>
+
+    <select id="getKnowledgModelStepOne" parameterType="map" resultType="map">
+        SELECT
+        b.ID AS knowledge_id,
+        b.NAME AS knowledge_name,
+        C.NAME AS point_name,
+        C.ID AS point_id
+        FROM
+        ontology_individual AS b,
+        ontology_class AS C
+        WHERE
+        1 = 1
+        AND b.ID IN ( SELECT range_individual_id FROM ontology_individual_op WHERE domain_individual_id = #{knowledgeId}
+        AND object_property_id = #{proTypeCode} )
+        AND b.class_id = C.ID
+    </select>
+
+    <select id="getKnowledgeByProCode" parameterType="map" resultType="map">
+        SELECT DISTINCT
+        b.individual_id AS knowledge_id,
+        C.NAME AS knowledge_name,
+        C.class_id AS point_id
+        FROM
+        ontology_individual_dp AS b,
+        ontology_individual AS C
+        WHERE
+        1 = 1
+        <if test="proCode != null and proCode!='' ">
+            AND b.data_property_id = #{proCode}
+        </if>
+        <if test="proValue != null and proValue!='' and listFlg==null">
+            AND b.data_property_value = #{proValue}
+        </if>
+        <if test="proValue != null and proValue!='' and listFlg==1">
+            AND b.data_property_value in
+            <foreach collection="vList" item="v" index="index" open="(" close=")" separator=",">
+                #{v}
+            </foreach>
+        </if>
+        <!--舰长，舰宽-->
+        <if test="proValue != null and proValue!='' and listFlg==2">
+            AND b.data_property_value BETWEEN #{startNum} and #{endNum}
+        </if>
+        <if test="knowledgeIds != null and knowledgeIds.size() > 0">
+            AND b.individual_id IN
+            <foreach collection="knowledgeIds" item="kp" index="index" open="(" close=")" separator=",">
+                #{kp}
+            </foreach>
+        </if>
+        AND b.individual_id = C.ID
+        <if test="kpIds != null and kpIds.size() > 0">
+            and c.class_id in
+            <foreach collection="kpIds" item="kp" index="index" open="(" close=")" separator=",">
+                #{kp}
+            </foreach>
+        </if>
+    </select>
+
+    <select id="getRelationKnowledgesByParam" parameterType="map" resultType="map">
+        SELECT DISTINCT
+        b.individual_id AS knowledge_id,
+        C.NAME AS knowledge_name,
+        C.class_id AS point_id
+        FROM
+        ontology_data_property AS A,
+        ontology_individual_dp AS b,
+        ontology_individual AS C
+        WHERE
+        1 = 1
+        <if test="countryList != null and countryList.size() > 0">
+            AND A.label = 'sc_country'
+            AND A.ID = b.data_property_id
+            AND b.data_property_value IN
+            <foreach collection="countryList" item="kp" index="index" open="(" close=")" separator=",">
+                #{kp}
+            </foreach>
+        </if>
+        AND b.individual_id = C.ID
+        <if test="kpIds != null and kpIds.size() > 0">
+            AND C.class_id IN
+            <foreach collection="kpIds" item="kp" index="index" open="(" close=")" separator=",">
+                #{kp}
+            </foreach>
+        </if>
+    </select>
+
+    <select id="getTifImage" parameterType="String" resultType="map">
+        SELECT
+        b.data_property_value
+        FROM
+        ontology_data_property AS A,
+        ontology_individual_dp AS b
+        WHERE
+        1 = 1
+        AND A.label = 'tif_image'
+        AND A.ID = b.data_property_id
+        AND b.individual_id = #{knowledgeId}
+        limit 1
+    </select>
+
+    <select id="getPhotoImage" parameterType="String" resultType="map">
+        SELECT
+        b.data_property_value
+        FROM
+        ontology_data_property AS A,
+        ontology_individual_dp AS b
+        WHERE
+        1 = 1
+        AND A.label = 'photo_image'
+        AND A.ID = b.data_property_id
+        AND b.individual_id = #{knowledgeId}
+        limit 1
+    </select>
+
+    <select id="getRelationProperty" parameterType="map" resultType="map">
+        SELECT
+        A.meta_properties,
+        A.domain_individual_id as knowledge_id,
+        b.NAME as knowledge_name,
+        b.class_id as point_id
+        FROM
+        ontology_individual_op AS A,
+        ontology_individual AS b
+        WHERE
+        1 = 1
+        AND A.range_individual_id = #{targetKnowledgeId}
+        <if test="knowledgeIds != null and knowledgeIds.size() > 0">
+            AND A.domain_individual_id IN
+            <foreach collection="knowledgeIds" item="kp" index="index" open="(" close=")" separator=",">
+                #{kp}
+            </foreach>
+        </if>
+        AND A.domain_individual_id = b.ID
+    </select>
+
+
+    <select id="getPics" parameterType="map" resultType="map">
+        SELECT
+        data_property_value
+        FROM
+        ontology_individual_dp
+        WHERE
+        1 = 1
+        AND data_property_id = ( SELECT ID FROM ontology_data_property WHERE 1 = 1 AND label = 'image_path' )
+        AND individual_id IN (
+        SELECT
+        individual_id
+        FROM
+        ontology_individual_dp
+        WHERE
+        1 = 1
+        AND data_property_id = ( SELECT ID FROM ontology_data_property WHERE 1 = 1 AND label = 'jiaodu' )
+        AND data_property_value = #{jiaodu}
+        AND individual_id IN (
+        SELECT
+        individual_id
+        FROM
+        ontology_individual_dp
+        WHERE
+        1 = 1
+        AND data_property_id = ( SELECT ID FROM ontology_data_property WHERE 1 = 1 AND label = 'weizhi' )
+        AND individual_id IN ( SELECT range_individual_id FROM ontology_individual_op WHERE domain_individual_id =
+        #{knowledgeId} )
+        AND data_property_value = #{weizhi}
+        )
+        )
+    </select>
+
+    <select id="getKnowledgePointsMapByIdList" parameterType="map" resultType="map">
+        SELECT
+        id,name
+        FROM
+        ontology_class
+        WHERE
+        1 = 1
+        <if test="kpIds != null and kpIds.size() > 0">
+            AND ID IN
+            <foreach collection="kpIds" item="kp" index="index" open="(" close=")" separator=",">
+                #{kp}
+            </foreach>
+        </if>
+    </select>
+
+    <select id="getProCode" parameterType="string" resultType="map">
+        SELECT
+        *
+        FROM
+        ontology_data_property
+        WHERE
+        NAME = #{name}
+        LIMIT 1
+    </select>
+
+    <select id="getPointCode" parameterType="string" resultType="map">
+        SELECT
+        *
+        FROM
+        ontology_class
+        WHERE
+        NAME = #{name}
+        LIMIT 1
+    </select>
+
+    <select id="getwqPoint" parameterType="string" resultType="map">
+        SELECT
+        *
+        FROM
+        ontology_class
+        WHERE
+        super_class_id = ( SELECT ID FROM ontology_class WHERE NAME = #{name} )
+    </select>
+
+    <select id="getPoints" parameterType="map" resultType="map">
+        SELECT
+        *
+        FROM
+        ontology_class
+        WHERE
+        <if test="classNames != null and classNames.size() > 0">
+            NAME IN
+            <foreach collection="classNames" item="kp" index="index" open="(" close=")" separator=",">
+                #{kp}
+            </foreach>
+        </if>
+    </select>
+
+    <select id="getKnowledgePics" parameterType="string" resultType="map">
+        SELECT
+        a.data_property_value
+        FROM
+        ontology_individual_dp as a ,ontology_data_property as b
+        WHERE
+        a.individual_id IN ( SELECT range_individual_id FROM ontology_individual_op WHERE domain_individual_id =
+        #{knowledgeId} )
+        and a.data_property_id=b.id
+        and b.data_type='IMAGE'
+    </select>
+
+    <select id="getmjImage" parameterType="string" resultType="map">
+        SELECT
+        *
+        FROM
+        sys_dictionary
+        WHERE
+        type_id = #{typeId}
+    </select>
+
+    <select id="getxianhao" parameterType="map" resultType="map">
+        SELECT
+        b.ID AS knowledge_id,
+        b.NAME AS knowledge_name,
+        C.ID AS point_id
+        FROM
+        ontology_individual_op AS A,
+        ontology_individual AS b,
+        ontology_class AS C
+        WHERE
+        1 = 1
+        AND A.domain_individual_id = b.ID
+        AND b.class_id = C.ID
+        AND range_individual_id IN (
+        SELECT
+        b.individual_id
+        FROM
+        ontology_data_property AS A,
+        ontology_individual_dp AS b
+        WHERE
+        1 = 1
+        AND A.NAME = #{xinhaoName}
+        AND A.ID = b.data_property_id
+        AND b.data_property_value = #{xinhaoNo}
+        )
+    </select>
+
+    <select id="getSysDictionary" parameterType="string" resultType="map">
+        SELECT
+        *
+        FROM
+        sys_dictionary
+        WHERE
+        1 = 1
+        AND code = #{code}
+    </select>
+    <!-- 根据知识名称查询知识信息-->
+    <select id="getKnowledgeByName" parameterType="map" resultType="map">
+        SELECT
+        *
+        FROM
+        ontology_individual
+        WHERE
+        NAME = #{picName}
+    </select>
+    <!-- 知识图片导入：根据知识点名称，知识名称查询知识信息-->
+    <select id="get_ontology_class" parameterType="map" resultType="map">
+        SELECT
+        b.ID
+        FROM
+        ontology_class AS A,
+        ontology_individual AS b
+        WHERE
+        A.NAME = #{kpName}
+        AND A.SCOPE = 'c1bb8db4-f75e-4e55-a2b0-343f6bae92a6'
+        AND A.ID = b.class_id
+        AND b.NAME = #{knowledgeName}
+    </select>
+    <!-- 知识图片导入：添加知识图片实体信息-->
+    <select id="save_ontology_individual" parameterType="map" resultType="map">
+        INSERT INTO ontology_individual ( ID, NAME, STATE, is_top, create_time )
+        VALUES
+        ( #{id}, #{picName}, 0, 'f', #{createTime} )
+    </select>
+    <!-- 知识图片导入：添加图片与关系之间的关系（如：高波级通用驱逐舰01与图片关系）-->
+    <select id="save_ontology_class_individual" parameterType="map" resultType="map">
+        INSERT INTO ontology_class_individual ( ID, class_id, individual_id )
+        VALUES
+        ( #{id}, #{classId}, #{picKnowledgeId} )
+    </select>
+    <!-- 知识图片导入：添加图片实体中图片名称属性值-->
+    <select id="save_ontology_individual_dp_name">
+        INSERT INTO ontology_individual_dp ( ID, individual_id, data_property_id, data_property_value, "sequence",
+        create_time )
+        VALUES
+        ( #{id}, #{picKnowledgeId}, 'd9ad382d-457f-4b6e-ab71-bb875e51da15', #{picName}, 0, #{createTime} )
+    </select>
+    <!-- 知识图片导入：添加图片实体中图片地址属性值-->
+    <select id="save_ontology_individual_dp_pic_path">
+        INSERT INTO ontology_individual_dp ( ID, individual_id, data_property_id, data_property_value, "sequence",
+        create_time )
+        VALUES
+        ( #{id}, #{picKnowledgeId}, 'f5c1868b-a403-47cd-9f62-296e61e9925a', #{picPath}, 0, #{createTime} )
+    </select>
+    <!-- 知识图片导入：添加图片实体中图片拍摄位置属性值-->
+    <select id="save_ontology_individual_dp_pswz">
+        INSERT INTO ontology_individual_dp ( ID, individual_id, data_property_id, data_property_value, "sequence",
+        create_time )
+        VALUES
+        ( #{id}, #{picKnowledgeId}, '21be52a5-b967-4fa8-8355-c70fadd5bc3d', #{pswz}, 2, #{createTime} )
+    </select>
+    <!-- 知识图片导入：添加图片实体中图片拍摄角度属性值-->
+    <select id="save_ontology_individual_dp_psjd">
+        INSERT INTO ontology_individual_dp ( ID, individual_id, data_property_id, data_property_value, "sequence",
+        create_time )
+        VALUES
+        ( #{id}, #{picKnowledgeId}, '569900a5-ab33-4756-b9c3-a2673ddc30b5',#{psjd}, 1, #{createTime} )
+    </select>
+    <!-- 知识图片导入：拍摄位置，拍摄角度查询-->
+    <select id="get_sys_dictionary" parameterType="map" resultType="map">
+        select * from sys_dictionary where type_id=#{typeId} and name=#{name}
+    </select>
+    <!--添加知识与图片关系（高波级通用驱逐舰-常规图片集合-高波级通用驱逐舰01）-->
+    <select id="save_ontology_individual_op" parameterType="map">
+        INSERT INTO ontology_individual_op ( ID, object_property_id, domain_individual_id, range_individual_id,
+        "sequence", create_time )
+        VALUES
+        ( #{id}, '3763133f-6ef8-4b27-8f65-8b4ee71a3166', #{parentKnowledgeId}, #{picKnowledgeId}, 0, #{createTime} )
+    </select>
+
+    <!-- 查询知识下的方位图片知识id-->
+    <select id="dj_getpicknowledge" parameterType="map" resultType="map">
+        SELECT C.individual_id
+        FROM
+        ontology_individual_op AS A,
+        ontology_class_individual AS b,
+        ontology_individual_dp AS C
+        WHERE
+        1 = 1
+        AND A.object_property_id = '3763133f-6ef8-4b27-8f65-8b4ee71a3166'
+        AND A.domain_individual_id = #{knowledgeId}
+        AND A.range_individual_id = b.individual_id
+        AND b.class_id = '461af794-5ced-4730-9a40-dba6e912f397'
+        AND C.individual_id = b.individual_id
+        group by c.individual_id
+    </select>
+
+    <select id="dj_knowledge" parameterType="map" resultType="map">
+        SELECT
+        b.NAME as knowledge_name,
+        A.NAME as kp_name
+        FROM
+        ontology_class AS A,
+        ontology_individual AS b
+        WHERE
+        1 = 1
+        AND A.ID = #{kpId}
+        AND b.ID = #{knowledgeId}
+    </select>
+
+    <select id="deepseekKnowlege" parameterType="map" resultType="map">
+        SELECT A.ID AS knowledge_id,
+        A.NAME AS knowledge_name,
+        A.class_id as kp_id
+        FROM
+        ontology_individual AS A ,ontology_class AS b
+        WHERE
+        1 = 1
+        AND A.NAME = #{knowledgeName}
+        AND A.class_id = b.ID
+        AND b.SCOPE = 'c1bb8db4-f75e-4e55-a2b0-343f6bae92a6'
+        limit 1
+    </select>
+</mapper>

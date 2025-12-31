@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cloud.model.dao.FocusKpDao">
+
+
+    <!-- 胡胡 根据用户id，知识点id查询关注信息 2022/1/13-->
+    <select id="getFocusKp" resultType="map">
+        SELECT
+        *
+        FROM
+        focus_kp
+        WHERE
+        user_id = #{userId}
+        <if test="kpId!=null and kpId!='' ">
+        AND kp_id =#{kpId}
+        </if>
+    </select>
+
+</mapper>

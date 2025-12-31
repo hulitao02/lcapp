@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cloud.exam.dao.QuestionDao">
+
+    <sql id="where">
+        <where>
+            <if test="type != null and type != ''">
+                and t.type = #{type}
+            </if>
+            <if test="question != null and question != ''">
+                <bind name="question" value="'%' + question + '%'"/>
+                and t.question = #{question}
+            </if>
+        </where>
+    </sql>
+    <select id="count" resultType="int">
+        select count(*) from question t
+        <include refid="where"/>
+    </select>
+
+    <select id="findAll" resultType="com.cloud.exam.model.exam.Question">
+        select * from question
+        <include refid="where" />
+        order by id asc
+    </select>
+
+
+    <select id="findAllTest" resultType="com.cloud.exam.model.exam.Question">
+        select * from question
+    </select>
+
+
+    <!-- 达梦数据库SQL修改 -->
+    <select id="getQuestionIn" resultType="com.cloud.exam.model.exam.Question">
+       select * from question where id in (
+            select DISTINCT  t.id
+            from question t
+            INNER  join  question_kp_rel qkr on t.id = qkr.question_id  where t.type = #{type}
+            <if test="kpString != null and kpString.size() > 0">
+                and qkr.kp_id in
+                <foreach collection="kpString" item="kp" index="index" open="(" close=")" separator=",">
+                    #{kp}
+                </foreach>
+            </if>
+
+            <if test="substring != null and substring.size() > 0">
+                and t.direct_id in
+                <foreach collection="substring" item="sub" index="index" open="(" close=")" separator=",">
+                    #{sub}
+                </foreach>
+            </if>
+            <if test="qIds != null and qIds.size() > 0">
+                and t.id not in
+                <foreach collection="qIds" item="qId" index="index" open="(" close=")" separator=",">
+                    #{qId}
+                </foreach>
+            </if>
+        )
+    </select>
+    <select id="getQuestions" resultType="com.cloud.exam.model.exam.Question">
+        select * from question where id in (
+            select DISTINCT  t.id from question t
+            INNER  join  question_kp_rel qkr on t.id = qkr.question_id  where t.type = #{questionType}
+            <if test="kpIds != null and kpIds.size() > 0">
+                and qkr.kp_id in
+                <foreach collection="kpIds" item="kp" index="index" open="(" close=")" separator=",">
+                    #{kp}
+                </foreach>
+            </if>
+            <if test="intDirectIds != null and intDirectIds.size() > 0">
+                and t.direct_id in
+                <foreach collection="intDirectIds" item="sub" index="index" open="(" close=")" separator=",">
+                    #{sub}
+                </foreach>
+            </if>
+            <if test="qIds != null and qIds.size() > 0">
+                and t.id not in
+                <foreach collection="qIds" item="qId" index="index" open="(" close=")" separator=",">
+                    #{qId}
+                </foreach>
+            </if>
+            and t.difficulty &gt; #{difficulty1} and t.difficulty &lt;= #{difficulty2}
+            ORDER BY t.id LIMIT #{questionNum}
+        )
+    </select>
+
+    <select id="getQuestionList" resultType="com.cloud.exam.model.exam.Question">
+        select question,kp_id,type,id from question
+    </select>
+
+    <!-- 试题统计
+        2021-12-24
+        1. getQuestionStatisticsByType
+        2. getQuestionStatisticsByTypeAndDifficulty
+        3. getQuestionStatisticsByIsUsed
+    ，新增加接口  -->
+    <select id="getQuestionStatisticsByType" resultType="java.util.HashMap">
+        SELECT type ,count(id) as count from  question q GROUP BY type;
+    </select>
+
+
+    <select id="getQuestionStatisticsByTypeAndDifficulty" resultType="java.util.HashMap">
+        SELECT
+            count(id) as count,
+            difficulty ,
+            type
+        from question_manage
+         GROUP BY type, difficulty
+    </select>
+
+
+    <select id="getQuestionStatisticsByIsUsed" resultType="java.util.HashMap">
+       SELECT status , count(id) as count from question GROUP BY status
+    </select>
+
+    <!-- 大文本text 无法distinct -->
+    <select id="selectQuestionPageDM" resultType="com.cloud.exam.model.exam.Question">
+
+        select * from question q_1 where q_1.id in (
+          select DISTINCT q.id from question q inner join question_kp_rel qr on q.id = qr.question_id
+          ${ew.customSqlSegment}
+        )
+
+    </select>
+
+    <select id="selectQuestionPage" resultType="com.cloud.exam.model.exam.Question">
+
+        select DISTINCT q.* from question q inner join question_kp_rel qr on q.id = qr.question_id
+        ${ew.customSqlSegment}
+
+
+    </select>
+
+
+    <!-- 根据活动id查询参赛人员 -->
+    <select id="getStudensByExamId" parameterType="map" resultType="map">
+        SELECT
+        *
+        FROM
+        exam_depart_user_rel
+        WHERE
+        1 = 1
+        AND ac_id = #{examId}
+    </select>
+
+</mapper>

@@ -1,0 +1,219 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cloud.exam.dao.EvalPersonHisDao">
+
+    <select id="getMonth" resultType="map">
+        SELECT
+        DISTINCT month
+        FROM
+        exam_eval_person_his
+        WHERE
+        1 = 1
+        AND kp_id != 0
+        AND user_id = #{userId}
+        ORDER BY
+        "month" DESC
+        LIMIT 12
+    </select>
+
+
+    <select id="getEvalPersonHisInfo" parameterType="map" resultType="map">
+        SELECT
+        *
+        FROM
+        exam_eval_person_his
+        WHERE
+        1 = 1
+        AND user_id = #{userId}
+        AND kp_id = #{kpId}
+        <if test="month != null and month !='' ">
+            AND "month" = #{month}
+        </if>
+        <if test="curFlg != null and curFlg !='' ">
+            AND cur_flg = #{curFlg}
+        </if>
+
+        limit 1
+    </select>
+
+    <!-- 个人 能力分布 -->
+    <select id="getAbility" parameterType="map" resultType="map">
+        select
+        *
+        from
+        exam_eval_person_his
+        where 1=1
+        and kp_id !=0
+        and cur_flg=1
+        and user_id=#{userId}
+        <if test="kpIds != null and kpIds.length >0 ">
+            AND kp_id in
+            <foreach collection="kpIds" index="index" item="kpId" open="(" separator="," close=")" >
+                #{kpId}
+            </foreach>
+        </if>
+    </select>
+
+    <!--个人 综合能力得分-->
+    <select id="getPersonalScore" parameterType="map" resultType="map">
+        SELECT
+        *
+        FROM
+        exam_eval_person_his
+        WHERE
+        1 = 1
+        AND kp_id = 0
+        AND cur_flg = 1
+        AND user_id = #{userId}
+    </select>
+
+    <!--获取当前部门下的人员-->
+    <select id="getUsersByDeptId" parameterType="map" resultType="map">
+        SELECT DISTINCT
+        user_id
+        FROM
+        exam_eval_person_his
+        WHERE
+        1 = 1
+        AND department_id = #{deptId}
+    </select>
+
+
+    <!--查询成员的当前能力-->
+    <select id="getInfoByPar" parameterType="map" resultType="map">
+        SELECT
+        *
+        FROM
+        exam_eval_person_his
+        WHERE
+        1 = 1
+        AND user_id = #{userId}
+        AND cur_flg = 1
+        <if test="kpId != null">
+            AND kp_id = #{kpId}
+        </if>
+    </select>
+
+    <select id="getDistribution" parameterType="map" resultType="map">
+        SELECT
+        *
+        FROM
+        exam_eval_person_his
+        WHERE
+        1 = 1
+        AND department_id = #{deptId}
+        AND kp_id = #{kpId}
+        AND cur_flg = 1
+    </select>
+
+    <update id="updateInfo" parameterType="map" >
+        UPDATE exam_eval_person_his
+        SET cur_flg = 0
+        WHERE
+        1 = 1
+        AND user_id = #{userId}
+        AND kp_id = #{kpId}
+    </update>
+
+    <!-- 计算各用户综合能力-->
+    <select id="getPersonHisScore"  resultType="map" parameterType="map">
+        SELECT
+        round( AVG ( eval_score ), 0 ) AS AVG,
+        user_id,
+        MAX ( MONTH ) as month,
+        MAX (department_id) as department_id
+        FROM
+        exam_eval_person_his
+        WHERE
+        1 = 1
+        AND cur_flg = 1
+        AND kp_id != 0
+        and ac_id=#{acId}
+        GROUP BY
+        user_id
+    </select>
+
+    <!-- 查询个人历史综合能力-->
+    <select id="getPersonHisPar" parameterType="map" resultType="map">
+        SELECT
+        *
+        FROM
+        exam_eval_person_his
+        WHERE
+        1 = 1
+        AND user_id = #{userId}
+        <if test="month != null and month != '' ">
+            AND MONTH = #{month}
+        </if>
+        <if test="curFlg != null and curFlg != '' ">
+            AND cur_flg = #{curFlg}
+        </if>
+        AND kp_id =#{kpId}
+    </select>
+
+    <!-- 根据id更新综合能力-->
+    <update id="updateHisZonghe" parameterType="map">
+        UPDATE exam_eval_person_his
+        SET eval_score =#{evalScore},
+        total_num = #{totalNum},
+        xl_num=#{xlNum},
+        kh_num=#{khNum}
+        WHERE
+        ID = #{id}
+    </update>
+
+    <!-- 根据id更新cur_flg-->
+    <update id="updateFlgById" parameterType="map">
+        UPDATE exam_eval_person_his
+        SET cur_flg = 0
+        WHERE
+        ID = #{id}
+    </update>
+
+    <select id="getDeptHis" parameterType="map" resultType="map">
+        SELECT
+        department_id,
+        kp_id,
+        round( AVG ( eval_score ), 0 ) AS AVG
+        FROM
+        exam_eval_person_his
+        WHERE
+        1 = 1
+        AND ac_id = #{acId}
+        AND cur_flg = 1
+        AND kp_id != 0
+        GROUP BY
+        department_id,
+        kp_id
+    </select>
+
+    <select id="getTopUser" parameterType="map" resultType="map">
+        SELECT
+        *
+        FROM
+        exam_eval_person_his
+        WHERE
+        1 = 1
+        AND kp_id = #{kpId}
+        AND cur_flg = 1
+        ORDER BY
+        eval_score DESC
+        LIMIT #{num}
+    </select>
+
+    <select id="getPointList" parameterType="map" resultType="map">
+        SELECT
+        DISTINCT kp_id
+        FROM
+        exam_eval_person_his
+        WHERE
+        1 = 1
+        AND eval_score &lt; #{evalScore}
+        ORDER BY
+        eval_score DESC
+    </select>
+
+</mapper>
+
+

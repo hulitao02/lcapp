@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cloud.knowledge.dao.LogDao">
+
+	<sql id="where">
+		<where>
+			<if test="username != null and username != ''">
+				<bind name="_username" value="'%' + username + '%'"/>
+				and t.username like #{_username}
+			</if>
+			<if test="module != null and module != ''">
+				and t.module = #{module}
+			</if>
+			<if test="flag != null and flag != ''">
+				and t.flag = #{flag}::boolean
+			</if>
+			<if test="beginTime != null and beginTime != ''">
+				and t.createTime &gt;= #{beginTime}::timestamp
+			</if>
+			<if test="endTime != null and endTime != ''">
+				and t.createTime &lt;= #{endTime}::timestamp
+			</if>
+		</where>
+	</sql>
+	<select id="count" resultType="int">
+		select count(*) from t_log t
+		<include refid="where" />
+	</select>
+
+	<select id="findData" resultType="com.cloud.model.log.Log">
+		select * from t_log t
+		<include refid="where" />
+		order by t.id desc
+		limit #{length} OFFSET #{start}
+	</select>
+</mapper>

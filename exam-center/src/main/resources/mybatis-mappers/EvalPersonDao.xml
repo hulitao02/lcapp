@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cloud.exam.dao.EvalPersonDao">
+
+    <!-- 单次考试：个人能力评估-->
+    <select id="getExamPersonalDetail" parameterType="map" resultType="map" >
+        SELECT
+        *
+        FROM
+        exam_eval_person
+        WHERE
+        1 = 1
+        and kp_id != 0
+        AND ac_id = #{acId}
+        AND user_id = #{userId}
+    </select>
+
+
+    <!-- 查询 A 活动下 A 部门下的人员总数-->
+    <select id="getUserCountDept" parameterType="map" resultType="map">
+        SELECT COUNT
+        ( DISTINCT user_id ) as user_count
+        FROM
+        exam_eval_person
+        WHERE
+        1 = 1
+        AND ac_id = #{acId}
+        AND department_id = #{deptId}
+    </select>
+
+    <!--单次 查询 A 部门下的 各人员综合能力-->
+    <select id="getExamPersonalEval" parameterType="map" resultType="map">
+        SELECT
+        *
+        FROM
+        exam_eval_person
+        WHERE
+        1 = 1
+        AND kp_id = 0
+        AND department_id = #{deptId}
+    </select>
+
+    <select id="queryExam" parameterType="long" resultType="map">
+        SELECT
+        *
+        FROM
+        drawresult
+        WHERE
+        ac_id =#{examId}
+    </select>
+
+    <select id="getPaperInfo" parameterType="map" resultType="map">
+        SELECT
+        *
+        FROM
+        student_answer
+        WHERE
+        1 = 1
+        AND student_id = #{userId}
+        AND paper_id =#{paperId}
+    </select>
+
+    <select id="getKpByQuestId" parameterType="map" resultType="map">
+        SELECT
+        *
+        FROM
+        question_kp_rel
+        WHERE
+        1 = 1
+        AND question_id = #{questionId}
+    </select>
+
+
+
+    <!-- 根据参数查询个人能力表 -->
+    <select id="getEvalPersonInfo" parameterType="map" resultType="map">
+        SELECT
+        *
+        FROM
+        exam_eval_person
+        WHERE
+        1 = 1
+        and kp_id != 0
+        <if test="acId != null and acId != '' ">
+            AND ac_id = #{acId}
+        </if>
+    </select>
+
+    <!--参加A 活动的部门-->
+    <select id="getDeptByAcId" parameterType="map" resultType="map">
+        SELECT
+        department_id
+        FROM
+        exam_eval_person
+        WHERE
+        1 = 1
+        AND ac_id = #{acId}
+        GROUP BY
+        department_id
+    </select>
+
+    <!-- 从exam_eval_person表计算exam_eval_dept表的能力   -->
+    <select id="getEvalDeptScore" parameterType="map" resultType="map">
+        SELECT
+        round( AVG ( eval_score ), 0 ) AS AVG,
+        MAX ( kp_id ) AS kp_id
+        FROM
+        exam_eval_person
+        WHERE
+        1 = 1
+        AND ac_id = #{acId}
+        AND department_id = #{deptId}
+        AND kp_id != 0
+        GROUP BY
+        kp_id
+    </select>
+
+</mapper>
+
+

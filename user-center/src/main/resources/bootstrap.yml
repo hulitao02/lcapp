@@ -1,0 +1,27 @@
+server:
+  port: 0
+spring:
+  application:
+    name: user-center
+  cloud:
+    nacos:
+      config:
+        server-addr: 192.168.4.5:18848
+#        accessKey: nacos   # 添加用户名
+#        secretKey: DDTJcpzx12#$   # 添加密码（默认密码是nacos）
+        file-extension: yaml # 假如不配置，则nacos远程配置文件的后缀为.properties
+        shared-dataids: shared-config.yaml
+        refreshable-dataids: shared-config.yaml
+#        namespace: ce442633-5d82-449b-93e7-4aa6b0804457
+      discovery:
+        server-addr: 192.168.4.5:18848
+#        namespace: ce442633-5d82-449b-93e7-4aa6b0804457
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: always

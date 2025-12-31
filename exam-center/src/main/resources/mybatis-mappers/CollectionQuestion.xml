@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cloud.exam.dao.CollectionQuestionDao">
+
+    <!-- 收藏试题-->
+    <insert id="saveInfo" parameterType="map">
+        INSERT INTO collection_question ( question_id, user_id, create_time,question,type ,question_flg)
+        VALUES
+        ( #{questionId}, #{userId}, #{createTime},#{question},#{type} )
+    </insert>
+
+    <!-- 取消收藏试题-->
+    <delete id="delInfo" parameterType="map">
+        DELETE
+        FROM
+        collection_question
+        WHERE
+        1 = 1
+        AND ID =#{id}
+    </delete>
+
+    <!-- 根据参数查询收藏试题信息-->
+    <select id="findByPar" parameterType="map" resultType="map">
+        SELECT
+        *
+        FROM
+        collection_question
+        WHERE
+        1 = 1
+        AND user_id = #{userId}
+        AND question_id =#{questionId}
+        <if test="questionFlg != null ">
+            AND question_flg =#{questionFlg}
+        </if>
+    </select>
+</mapper>
+
+

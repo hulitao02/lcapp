@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cloud.exam.dao.AnalysisFrameworkDao">
+
+    <sql id="where">
+        <where>
+            <if test="type != null and type != ''">
+                and t.type = #{type}
+            </if>
+            <if test="name != null and name != ''">
+                <bind name="name" value="'%' + name + '%'"/>
+                and t.name = #{name}
+            </if>
+        </where>
+    </sql>
+
+    <select id="selectAnalysisFrameworkPage" resultType="com.cloud.exam.model.exam.AnalysisFramework">
+        select * from analysis_framework t
+        ${ew.customSqlSegment}
+    </select>
+
+
+</mapper>

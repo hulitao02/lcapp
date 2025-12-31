@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.cloud.model.dao.StudyTimeStatisticsDao">
+
+    <!-- 根据用户id，日期查询数据是否存在-->
+    <select id="getInfo" parameterType="map" resultType="int">
+        SELECT
+        count(1)
+        FROM
+        study_time_statistics
+        WHERE
+        user_id = #{userId}
+        AND time_day = #{timeDay}
+   </select>
+
+    <!-- 根据用户id，日期删除数据-->
+    <delete id="delInfo" parameterType="map">
+        DELETE
+        FROM
+        study_time_statistics
+        WHERE
+        time_day = #{timeDay}
+    </delete>
+
+    <!-- 电子所：统计所有用户的所有学习时间-->
+    <select id="getTotalInfo" resultType="map">
+        SELECT
+        user_id,
+        SUM ( time_count ) as studyminutes
+        FROM
+        study_time_statistics
+        GROUP BY
+        user_id
+    </select>
+
+    <!-- 统计每个用户的本月学习时间时长和排名-->
+    <select id="getPerStudyHoursAndRank" resultType="map">
+        select user_id,sum(time_count) as studyminutes ,
+        ROW_NUMBER () OVER (ORDER BY sum(time_count) desc) as rank
+        from study_time_statistics where
+        time_day like concat(#{timeDay},'%') GROUP BY user_id  ORDER BY studyminutes desc
+    </select>
+</mapper>

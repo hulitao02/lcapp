@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cloud.model.dao.ModelKpDao">
+    <select id="getModelCount" resultType="com.cloud.model.bean.vo.KnowledgePointVo">
+        SELECT
+            kp_id kpId,
+            SUM ( CASE WHEN status > 0 THEN 1 ELSE 0 END ) AS modelCount,
+            SUM ( CASE status WHEN 2 THEN 1 ELSE 0 END ) AS modelDataCount
+        FROM
+            model_kp mk
+        WHERE
+            status > 0
+            <if test="kpId != null">
+                AND kp_id = #{kpId}
+            </if>
+            <if test="kpIds != null and kpIds.size > 0">
+                AND kp_id in
+                <foreach collection="kpIds" item="kId" open="(" separator="," close=")">
+                    #{kId}
+                </foreach>
+            </if>
+        GROUP BY
+            kp_id
+    </select>
+
+    <select id="getModelKpVoById" resultType="com.cloud.model.bean.vo.ModelKpVo">
+        SELECT
+            mk.id,
+            mk.name,
+            mk.kp_id,
+            mk.model_id,
+            mk.link_type,
+            mk.ico_path,
+            mk.sort,
+            mk.status,
+            pm.service_path,
+            pm.pic_path
+        FROM
+            model_kp mk
+            INNER JOIN page_model pm ON mk.model_id = pm.id
+        WHERE
+            mk.status > 0
+            AND mk.id = #{modelKpId}
+    </select>
+
+    <select id="getVolListByKpId" resultType="com.cloud.model.bean.vo.ModelKpVo">
+        SELECT
+            mk.id,
+            mk.name,
+            mk.kp_id,
+            mk.model_id,
+            mk.link_type,
+            mk.ico_path,
+            mk.sort,
+            mk.status,
+            pm.service_path,
+            pm.pic_path
+        FROM
+            model_kp mk
+            INNER JOIN page_model pm ON mk.model_id = pm.id
+        WHERE
+            mk.status > 0
+            AND mk.kp_id = #{kpId}
+            order by mk.sort
+    </select>
+
+    <select id="getKpList" parameterType="map" resultType="map">
+        SELECT DISTINCT
+        kp_id
+        FROM
+        model_kp
+        WHERE
+        1 = 1
+        AND status =2
+        <if test="kpIds != null and kpIds.length >0 ">
+            AND kp_id in
+            <foreach collection="kpIds" index="index" item="kpId" open="(" separator="," close=")" >
+                ${kpId}
+            </foreach>
+        </if>
+    </select>
+
+    <select id="getCount" parameterType="map" resultType="map">
+        SELECT
+        *
+        FROM
+        model_kp
+        WHERE
+        1 = 1
+        AND kp_id = #{kpId}
+    </select>
+</mapper>

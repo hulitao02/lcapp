@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Insert title here</title>
+    <link rel="stylesheet" type="text/css" media="screen" href="../../layui/css/layui.css">
+</head>
+<style>
+    .layui-form{
+        padding: 20px 20px 0px;
+    }
+    .explain h3{
+        margin-bottom: 10px;
+    }
+    .explain p{
+        line-height: 26px;
+    }
+    .explain .con{
+        padding-left: 20px;
+    }
+    .explain .con p span:nth-child(1){
+        width: 600px;
+        display: inline-block;
+    }
+    .btn{
+        display: block;
+        margin-bottom: 0px;
+        text-align: center;
+    }
+</style>
+<body>
+<div>
+    <form class="layui-form" onsubmit="return false" id="form">
+        <div class="layui-form-item">
+            <div class="explain">
+                <h3>批量导入试题说明</h3>
+                <p>1、导入支持判断题、填空题、问答题、简答题、单选题、多选题；</p>
+                <div>
+                    <p></p>2、试题类型、选项、答案、知识点、难度及解析，请用“【】”括住；</p>
+                    <div class="con">
+                        <p>
+                            <span>①试题的类型：后直接跟试题内容；</span>
+                            <span>必填</span>
+                        </p>
+                        <p>
+                            <span>②试题的答案：直接跟选项(选项不分开)；若多个填空题用“；”分开；选择题请用大写英文字母；多选题请用“,”号隔开，例如：A,B,C,D；</span>
+                            <span>必填</span>
+                        </p>
+                        <p>
+                            <span>③试题的知识点：不可省略或不写，确保与后台查到的数据一致</span>
+                            <span>必填</span>
+                        </p>
+                        <p>
+                            <span>④试题的难度   简单、一般、中等、复杂</span>
+                            <span>默认：一般（选填）</span>
+                        </p>
+                        <p>
+                            <span>⑤试题的解析：内容或标签可不填</span>
+                            <span>选填</span>
+                        </p>
+                    </div>
+                </div>
+                <p>3、试题的类型每一个为以后，切不可多个属性为一行；</p>
+                <p>4、试题、选项需要追加图片时、请使用内嵌插入图片，图片为文字的下一行；</p>
+                <p>5、试题的每一个，与上一个空一行。</p>
+            </div>
+        </div>
+        <div class="layui-form-item btn">
+            <button type="button" class="layui-btn layui-btn-sm" onclick="downloadTemplate()">下载模版</button>
+            <button type="button" class="layui-btn layui-btn-sm" id="upload">上传文件</button>
+        </div>
+    </form>
+</div>
+</body>
+<script src="../../js/constant.js"></script>
+<script type="text/javascript" src="../../js/libs/jquery-3.3.1.min.js"></script>
+<script type="text/javascript" src="../../js/jq.js"></script>
+<script type="text/javascript" src="../../js/common.js"></script>
+<script type="text/javascript" src="../../layui/layui.js"></script>
+<script type="text/javascript">
+    //上传
+    layui.use(['upload'], function(){
+		var upload = layui.upload;
+		upload.render({
+			elem: '#upload', //绑定元素
+			accept: 'file', //普通文件
+            exts: 'doc|docx',//只允许上传word文件
+			url: domainName + "/api-e/question/importWord?use=0",
+			done: function(res, index, upload){
+                layer.msg("上传完成", {shift: -1, time: 1000}, function(){
+					var index = parent.layer.getFrameIndex(window.name); //获取窗口索引
+					parent.layer.close(index);
+                });
+			}
+		});
+	});
+    function downloadTemplate(){
+        window.open('../../assets/file/试题批量导入模板.docx');
+    };
+</script>
+</html>

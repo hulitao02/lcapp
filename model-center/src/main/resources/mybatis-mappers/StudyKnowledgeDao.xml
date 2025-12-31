@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cloud.model.dao.StudyKnowledgeDao">
+
+    <resultMap id="BaseStudyPlanMap" type="com.cloud.model.model.StudyKnowledge">
+        <id column="id" property="id" jdbcType="INTEGER"></id>
+        <result column="plan_id" property="planId" jdbcType="INTEGER"></result>
+        <result column="knowledge_id" property="knowledgeId" jdbcType="VARCHAR"></result>
+        <result column="knowledge_name" property="knowledgeName" jdbcType="VARCHAR"></result>
+        <result column="kp_id" property="kpId" jdbcType="VARCHAR"></result>
+        <result column="update_time" property="updateTime" jdbcType="TIMESTAMP"></result>
+        <result column="status" property="status" jdbcType="INTEGER"></result>
+    </resultMap>
+
+    <!--    通过模板查询当前下，所有跟组件挂接的信息 , 如果传递组件参数，那么就只查询 组件下挂接的信息 -->
+    <select id="getStudyKnowledgeInfos" parameterType="java.util.List" resultMap="BaseStudyPlanMap">
+        select
+            sk.id, sk.plan_id, sk.knowledge_id, sk.knowledge_name, sk.kp_id , sk.update_time ,sk.status
+        from study_knowledge sk
+        <where>
+            status = 1
+            and sk.plan_id in
+            <foreach collection="collection" item="planId" separator="," open="(" close=")">
+                #{planId}
+            </foreach>
+        </where>
+    </select>
+
+    <delete id="delStudyKnowledge" parameterType="map">
+        DELETE
+        FROM
+        study_knowledge
+        WHERE
+        1 = 1
+        <if test="kIds != null and kIds.length >0 ">
+            AND knowledge_id in
+            <foreach collection="kIds" index="index" item="kId" open="(" separator="," close=")" >
+                ${kId}
+            </foreach>
+        </if>
+    </delete>
+
+
+</mapper>

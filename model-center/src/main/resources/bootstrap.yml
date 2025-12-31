@@ -1,0 +1,32 @@
+spring:
+  application:
+    name: model-center
+  cloud:
+    nacos:
+      config:
+        server-addr: 192.168.10.203:8848
+        file-extension: yaml # 假如不配置，则nacos远程配置文件的后缀为.properties
+        shared-dataids: shared-config.yaml
+        refreshable-dataids: shared-config.yaml
+      discovery:
+        server-addr: 192.168.10.203:8848
+        register-enabled: true
+  devtools:
+    restart:
+      #热部署生效
+      enabled: false
+server:
+  port: 0
+  connection-timeout: 1800000
+management:
+  endpoints:
+    web:
+      exposure:
+        include: '*'
+  endpoint:
+    health:
+      show-details: always
+file:
+  local:
+    path: E:\local
+    urlPrefix: http://192.168.10.203:8888/

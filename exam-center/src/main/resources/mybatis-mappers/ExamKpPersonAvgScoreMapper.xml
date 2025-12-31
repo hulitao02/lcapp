@@ -1,0 +1,352 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cloud.exam.dao.ExamKpPersonAvgScoreDao">
+    <select id="analyzeExamKpPersonAvgScore" resultType="com.cloud.exam.model.ExamKpPersonAvgScore">
+        SELECT a.student_id as userId,
+        a.paper_id as paperId,
+        ac_id as acId,
+        b.kp_id as kpId,
+        AVG( a.actual_score ) as avgScore,
+        COUNT( a.question_id ) as questionCount,
+        SUM( a.actual_score ) as totalScore
+        FROM
+        "student_answer" a,
+        "question_kp_rel" b
+        WHERE
+        a.question_id = b.question_id
+        and ac_id = #{examId}
+        GROUP BY
+        student_id,
+        paper_id,
+        ac_id,
+        kp_id
+    </select>
+    <select id="getPersonalAbility" resultType="com.cloud.exam.model.eval.EvalKpNewDto">
+        select
+            kp_id               as kpId ,
+            SUM ( total_score ) / SUM ( question_count ) as bigDecimalScore,
+            SUM(question_count) as khNum
+        from
+            exam_kp_person_avg_score
+        where
+            user_id=#{userId}
+        <if test="kpIds!=null and kpIds.length>0">
+            and kp_id in
+            <foreach collection="kpIds" item="kpId" open="(" close=")" separator=",">
+                #{kpId}
+            </foreach>
+        </if>
+        group by
+            kp_id
+    </select>
+    <select id="getPersonalHisScore" resultType="com.cloud.exam.model.eval.XAxisScoreDto">
+        select
+            xAxis                    ,
+            avg(score) as score,
+            count(distinct ac_id) count
+        from
+            (
+                select
+                    *,
+                    to_char(login_date,<if test="isMonth==true">'dd'</if><if test="isMonth==false">'mm'</if>) as xAxis
+                from
+                    drawresult
+                where
+                    user_id                    =#{userId}
+                  and login_date between #{startTime} and #{endTime}
+                  and user_status                =4
+                  and exam_type                  =0
+            )
+                tt
+        group by
+            xAxis
+    </select>
+    <select id="trainSchedule" resultType="com.cloud.exam.model.eval.TrainScheduleDto">
+        select
+        month                     as month,
+        count(distinct kp_id)     as kpNum,
+        wm_concat(distinct kp_id) as kpIds
+        from
+        (
+        select
+        kp_id,
+        to_char(create_time, 'mm') as month
+        from
+        exam_kp_person_avg_score
+        where
+        to_char(create_time, 'yyyy')=#{year}
+        and user_id                     = #{userId}
+
+        union all
+
+        select
+        kp_id,
+        to_char(sa.create_time, 'mm') as month
+        from
+        student_answer sa
+        left join
+        (
+        select distinct
+        id,
+        regexp_substr(kp_ids, '[^,]+', 1, LEVEL) as kp_id
+        from
+        (
+        select
+        regexp_replace(knowledge_id, '|\[|\]', '') as kp_ids,
+        *
+        from
+        operation_train
+        )
+        t CONNECT BY LEVEL &lt;= length(kp_ids)-length(regexp_replace(kp_ids, ',', ''))+1
+        order by
+        id
+        )
+        ot
+        on
+        sa.question_id=ot.id
+        where
+        to_char(sa.create_time, 'yyyy')=#{year}
+        and student_id                     = #{userId}
+        and paper_id                       =0
+        and paper_type                     =-1
+        )
+        t
+        group by
+        month
+        order by
+        month
+    </select>
+    <select id="getDeptKpScore" resultType="com.cloud.exam.model.eval.EvalKpNewDto">
+
+        select
+            *
+        from
+            (
+                select
+                    kp_id               as kpId ,
+                    SUM ( total_score ) / SUM ( question_count )      as bigDecimalScore,
+                    SUM(question_count) as khNum
+                from
+                    exam_kp_person_avg_score
+                where
+                    user_id in
+                <foreach collection="userIdList" item="userId" separator="," open="(" close=")">
+                    #{userId}
+                </foreach>
+                <if test="kpIds!=null and kpIds.length>0">
+                    and kp_id in
+                    <foreach collection="kpIds" item="kpId" open="(" close=")" separator=",">
+                        #{kpId}
+                    </foreach>
+                </if>
+                group by
+                    kp_id
+            )
+                tt
+        order by
+        bigDecimalScore desc limit 10
+    </select>
+    <select id="deptAbilityBak" resultType="com.cloud.exam.model.ExamKpPersonAvgScore">
+        select
+            *
+        from
+            (
+                select
+                    SUM ( total_score ) / SUM ( question_count ) as avg_score,
+                    user_id                    ,
+                    sum(question_count)   as question_count,
+                    kp_id
+                from
+                    exam_kp_person_avg_score
+                where
+                        kp_id in
+                        <if test="kpIds==null or kpIds.length==0">
+                        (
+                            select
+                                kpId
+                            from
+                                (
+                                    select
+                                        kp_id               as kpId ,
+                                        SUM ( total_score ) / SUM ( question_count )      as score,
+                                        SUM(question_count) as khNum
+                                    from
+                                        exam_kp_person_avg_score
+                                    where
+                                        user_id in
+                                    <foreach collection="userIdList" item="userId" separator="," open="(" close=")">
+                                        #{userId}
+                                    </foreach>
+                                    group by
+                                        kp_id
+                                )
+                                    tt
+                            order by
+                                score desc limit 5
+                        )
+                        </if>
+                        <if test="kpIds!=null and kpIds.length>0">
+                            <foreach collection="kpIds" item="kpId" open="(" close=")" separator=",">
+                                #{kpId}
+                            </foreach>
+                        </if>
+                        and user_id in
+                        <foreach collection="userIdList" item="userId" separator="," open="(" close=")">
+                            #{userId}
+                        </foreach>
+                group by
+                    user_id,
+                    kp_id
+            )
+                dd
+        order by
+            kp_id,
+            avg_score desc,
+            user_id
+    </select>
+    <select id="deptAbility" resultType="com.cloud.exam.model.ExamKpPersonAvgScore">
+        select
+        *
+        from
+        (
+        select
+        SUM ( total_score ) / SUM ( question_count ) as avg_score,
+        user_id                    ,
+        sum(question_count)   as question_count,
+        kp_id
+        from
+        exam_kp_person_avg_score
+        where
+        kp_id in
+        <if test="kpIds==null or kpIds.length==0">
+            (
+            select
+            kpId
+            from
+            (
+            select
+            kp_id               as kpId ,
+            SUM ( total_score ) / SUM ( question_count ) as score,
+            SUM(question_count) as khNum
+            from
+            exam_kp_person_avg_score
+            where
+            user_id in
+            <foreach collection="userIdList" item="userId" separator="," open="(" close=")">
+                #{userId}
+            </foreach>
+            group by
+            kp_id
+            )
+            tt
+            order by
+            score desc limit 5
+            )
+        </if>
+        <if test="kpIds!=null and kpIds.length>0">
+            <foreach collection="kpIds" item="kpId" open="(" close=")" separator=",">
+                #{kpId}
+            </foreach>
+        </if>
+        and user_id in
+        <foreach collection="userIdList" item="userId" separator="," open="(" close=")">
+            #{userId}
+        </foreach>
+        group by
+        user_id,
+        kp_id
+        )
+        dd
+        order by
+        kp_id,
+        avg_score desc
+        limit #{limit}
+    </select>
+    <select id="distribution" resultType="com.cloud.exam.model.eval.EvalDeptNewDto">
+        select
+            *
+        from
+            (
+                select
+                    SUM ( total_score ) / SUM ( question_count ) as bigDecimalScore          ,
+                    user_id   as userId              ,
+                    sum(question_count) as khNum
+                from
+                    exam_kp_person_avg_score
+                where
+                        kp_id   =
+                        <if test="kpId==null">
+                        (
+                            select
+                                kpId
+                            from
+                                (
+                                    select
+                                        kp_id               as kpId ,
+                                        SUM ( total_score ) / SUM ( question_count )      as score,
+                                        SUM(question_count) as khNum
+                                    from
+                                        exam_kp_person_avg_score
+                                    where
+                                        user_id in
+                                        <foreach collection="userIdList" item="userId" separator="," open="(" close=")">
+                                            #{userId}
+                                        </foreach>
+                                    group by
+                                        kp_id
+                                )
+                                    tt
+                            order by
+                                score desc limit 1
+                        )
+                        </if>
+                      <if test="kpId!=null">
+                          #{kpId}
+                      </if>
+                      and user_id in
+                        <foreach collection="userIdList" item="userId" separator="," open="(" close=")">
+                            #{userId}
+                        </foreach>
+                group by
+                    user_id
+            )
+                dd
+        order by
+        bigDecimalScore desc
+    </select>
+    <select id="getPersonalScore" resultType="java.math.BigDecimal">
+        SELECT sum(total_score)/count(DISTINCT ac_id) FROM exam_kp_person_avg_score where user_id=#{userId};
+    </select>
+    <select id="getDeptScore" resultType="java.math.BigDecimal">
+        SELECT sum(total_score)/count(DISTINCT concat(ac_id,':',user_id)) FROM exam_kp_person_avg_score where user_id in
+        <foreach collection="userIdList" item="userId" open="(" close=")" separator=",">
+            #{userId}
+        </foreach>
+    </select>
+    <select id="getPersonalDeptScore" resultType="com.cloud.exam.model.eval.EvalDeptNewDto">
+        SELECT
+        *
+        FROM
+        (
+        SELECT
+            user_id AS userId,
+            SUM ( total_score ) / SUM ( question_count ) AS bigDecimalScore,
+            SUM ( question_count ) AS khNum
+        FROM
+            exam_kp_person_avg_score
+        WHERE
+            user_id IN
+        <foreach collection="userIdList" item="userId" separator="," open="(" close=")">
+            #{userId}
+        </foreach>
+          <if test="kpId!=null">
+            AND kp_id = #{kpId}
+          </if>
+        GROUP BY
+            user_id
+        ) t
+        ORDER BY
+        bigDecimalScore DESC,
+        userId
+    </select>
+</mapper>

@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.cloud.model.dao.StudyPlanDao">
+
+    <resultMap id="BaseStudyPlanMap" type="com.cloud.model.model.StudyPlan">
+        <id column="id" jdbcType="INTEGER" property="id"/>
+        <result column="user_id" jdbcType="INTEGER" property="userId"/>
+        <result column="plan_content" jdbcType="VARCHAR" property="planContent"/>
+        <result column="summary" jdbcType="VARCHAR" property="summary"/>
+        <result column="plan_start_time" jdbcType="TIMESTAMP" property="planStartTime"/>
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
+        <result column="update_time" jdbcType="TIMESTAMP" property="updateTime"/>
+        <result column="status" jdbcType="INTEGER" property="status"/>
+    </resultMap>
+
+    <resultMap id="StudyPlanVOMap" type="com.cloud.model.bean.vo.StudyPlanVo">
+        <id column="id" jdbcType="INTEGER" property="id"/>
+        <result column="user_id" jdbcType="INTEGER" property="userId"/>
+        <result column="plan_content" jdbcType="VARCHAR" property="planContent"/>
+        <result column="summary" jdbcType="VARCHAR" property="summary"/>
+        <result column="plan_start_time" jdbcType="TIMESTAMP" property="planStartTime"/>
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
+        <result column="update_time" jdbcType="TIMESTAMP" property="updateTime"/>
+        <result column="status" jdbcType="INTEGER" property="status"/>
+        <!--     新添加 知识点学习部分内容-->
+        <result column="knowledge_id" jdbcType="VARCHAR" property="knowledgeId"/>
+        <result column="knowledge_name" jdbcType="VARCHAR" property="knowledgeName"/>
+<!--        学习状态 -->
+         <result column="study_status" jdbcType="INTEGER" property="studyStatus"/>
+        <result column="study_date" jdbcType="INTEGER" property="studyDate"/>
+    </resultMap>
+
+    <!-- 学习计划关联的信息
+         private Integer id ;
+    private Integer planId ;
+    private Integer studyStatus;
+    private Date startTime;
+    private Date endTime;
+     -->
+    <resultMap id="planVO" type="com.cloud.model.bean.vo.PlanVO">
+        <id column="id" jdbcType="INTEGER" property="id"/>
+        <result column="end_time" jdbcType="TIMESTAMP" property="endTime"/>
+        <result column="start_time" jdbcType="TIMESTAMP" property="startTime"/>
+        <!--     新添加 知识点学习部分内容-->
+        <result column="knowledge_id" jdbcType="VARCHAR" property="knowledgeId"/>
+        <result column="study_status" jdbcType="INTEGER" property="studyStatus"/>
+    </resultMap>
+
+
+
+
+
+    <!--    通过模板查询当前下，所有跟组件挂接的信息 , 如果传递组件参数，那么就只查询 组件下挂接的信息 -->
+    <select id="getStudyPlanInfos" parameterType="map" resultMap="BaseStudyPlanMap">
+        select
+        sp.id,sp.user_id,sp.plan_content, sp.summary, sp.plan_start_time, sp.create_time, sp.update_time, sp.status
+        from study_plan sp
+        <where>
+            <if test="status != null">
+                and sp.status = #{status}
+            </if>
+            <if test="userId != null">
+                and sp.user_id = #{userId}
+            </if>
+            <if test="paramStudyStartTime != null">
+                and sp.plan_start_time <![CDATA[>=]]> #{paramStudyStartTime}
+            </if>
+            <if test="paramStudyEndTime != null">
+                and sp.plan_start_time <![CDATA[<=]]> #{paramStudyEndTime}
+            </if>
+        </where>
+        order by create_time asc
+    </select>
+
+
+    <!-- 新增加    统计接口-->
+    <select id="getStudyPlansWithStudyStatus" parameterType="map" resultMap="StudyPlanVOMap">
+       SELECT
+            sp.id,sp.user_id,sp.plan_content, sp.summary, sp.plan_start_time, sp.create_time, sp.update_time,
+            sp.status,
+            sk.knowledge_id as knowledge_id,
+            sk.knowledge_name as knowledge_name,
+            ck.study_date as study_date,
+            sk.study_status as study_status,
+            sk.kp_id as kp_id
+
+
+       FROM
+            study_plan sp
+            left JOIN study_knowledge sk ON sp.id = sk.plan_id
+            left JOIN knowledge_view ck ON sk.knowledge_id = ck.senses_id
+        <where>
+            <if test="userId != null">
+                and sp.user_id = #{userId}
+            </if>
+            <if test="status != null">
+                and sp.status = #{status}
+            </if>
+            <if test="paramStudyStartTime != null">
+                and to_timestamp(to_char(sp.plan_start_time,'yyyy-MM-dd HH:mm:ss'),'YYYY-MM-DD') <![CDATA[>=]]> #{paramStudyStartTime}
+            </if>
+            <if test="paramStudyEndTime != null">
+                and to_timestamp(to_char(sp.plan_start_time,'yyyy-MM-dd HH:mm:ss'),'YYYY-MM-DD') <![CDATA[<=]]> #{paramStudyEndTime}
+            </if>
+            <!-- 时间查询参数 -->
+            <if test="paramsDate != null">
+                and to_char(sp.plan_start_time,'yyyy') <![CDATA[=]]> #{paramsDate}
+            </if>
+        </where>
+        order by create_time asc
+    </select>
+
+    <!--    统计学习计划完成情况 -->
+    <select id="getStatisticsStudyPlansWithStudyStatus" parameterType="java.util.HashMap" resultType="map">
+       SELECT
+            to_char( sp_1.plan_start_time, 'yyyy-MM' ) as date ,
+            COUNT ( * ) as count
+       FROM
+            (
+            SELECT
+                sp."id",
+                sp.plan_content,
+                sp.plan_start_time,
+                sk.plan_id,
+                sk.knowledge_id,
+                sk.knowledge_name,
+                sk.status
+            FROM
+                study_plan sp
+                JOIN study_knowledge sk ON sp."id" = sk.plan_id
+                <where>
+                    <if test="status != null">
+                        and sk.status = #{status}
+                    </if>
+                    <if test="paramDate != null">
+                        and to_char(sp.plan_start_time,'yyyy') = #{paramDate}
+                    </if>
+                </where>
+            ) sp_1
+       GROUP BY
+            to_char( sp_1.plan_start_time, 'yyyy-MM' )
+    </select>
+
+
+
+    <!-- 查询所有学习计划，关联的知识点 -->
+    <select id="getPlanKnowledgeList" parameterType="java.util.HashMap" resultMap="planVO">
+            select sk.id, sk.study_status as study_status,
+                   sp.id as plan_id , sp.create_time as start_time , sp.plan_start_time as end_time
+            from study_plan sp join study_knowledge sk
+            on sp.id = sk.plan_id
+            <where>
+                <if test="userId != null">
+                    and sp.user_id = #{userId}
+                </if>
+
+                <if test="knowledgeId != null">
+                    and sk.knowledge_id = #{knowledgeId}
+                </if>
+            </where>
+    </select>
+
+</mapper>

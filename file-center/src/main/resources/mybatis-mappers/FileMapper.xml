@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cloud.file.dao.FileDao">
+
+	<sql id="where">
+		<where>
+			<if test="name != null and name != ''">
+				<bind name="_name" value="'%' + name + '%'"/>
+				and t.name like #{_name}
+			</if>
+			<if test="beginTime != null and beginTime != ''">
+				and t.createTime &gt;= to_timestamp(#{beginTime}, 'yyyy-mm-dd')
+			</if>
+			<if test="endTime!= null and endTime != ''">
+				and DATE(t.createTime) &lt;= to_timestamp(#{endTime}, 'yyyy-mm-dd')
+			</if>
+		</where>
+	</sql>
+
+	<select id="count" resultType="int">
+		select count(*) from file_info t
+		<include refid="where" />
+	</select>
+
+	<select id="findData" resultType="com.cloud.file.model.FileInfo">
+		select * from file_info t
+		<include refid="where" />
+		order by t.createTime desc
+		limit #{length} OFFSET #{start}
+	</select>
+
+	<update id="updateFile">
+		update file_info
+		<set>
+			<if test="useTimes != null">
+				useTimes = #{useTimes,jdbcType=INTEGER}
+			</if>
+		</set>
+		where id = #{id,jdbcType=VARCHAR}
+	</update>
+</mapper>

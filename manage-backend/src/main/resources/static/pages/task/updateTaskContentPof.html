@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en-us" id="extr-page">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" type="text/css" media="screen" href="../../css/bootstrap.min.css">
+</head>
+<body>
+<div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+    <form class="form-horizontal" onsubmit="return false" id="form">
+        <input type="hidden" id="id" name="id">
+        <input type="hidden" id="contenttype" name="contenttype">
+        <input type="hidden" id="createtime" name="createtime">
+        <input type="hidden" id="updatetime" name="updatetime">
+        <fieldset>
+            <div class="form-group">
+                <label class="col-md-2 control-label">任务内容名称（归档）</label>
+                <div class="col-md-10">
+                    <input class="form-control" placeholder="任务内容名称" type="text" name="name" id="name" maxlength="320"
+                           data-bv-notempty="true"
+                           data-bv-notempty-message="任务内容名称 不能为空">
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-md-2 control-label">数据源名称</label>
+                <div class="col-md-10">
+                    <select class="form-control input-sm" id="datasourceName">
+                        <option value="远红外数据源">远红外数据源</option>
+                        <option value="基础数据源">基础数据源</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-md-2 control-label">数据集名称</label>
+                <div class="col-md-10">
+                    <select class="form-control input-sm" id="datacollectionName">
+                        <option value="侯立旺的远红外数据集">侯立旺的远红外数据集</option>
+                        <option value="侯立旺的基础数据集">侯立旺的基础数据集</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-md-2 control-label">归档路径</label>
+                <div class="col-md-10">
+                    <input class="form-control" placeholder="归档路径" type="text" name="param" id="param" maxlength="320"
+                           data-bv-notempty="true"
+                           data-bv-notempty-message="归档路径 不能为空">
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-md-2 control-label">分片大小设置</label>
+                <div class="col-md-10">
+                    <input class="form-control" placeholder="分片大小设置" type="text" name="splitSize" id="splitSize" maxlength="320"
+                           data-bv-notempty="true"
+                           data-bv-notempty-message="分片大小设置 不能为空">
+                </div>
+            </div>
+            <div class="form-actions">
+                <div class="row" align="center">
+                    <div class="col-md-12">
+                        <button class="btn btn-primary" onclick="location.href='taskContentList.html'">返回</button>
+                        <button class="btn btn-primary" type="submit" onclick="add()">
+                            <i class="fa fa-save"></i> 保存
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </fieldset>
+    </form>
+</div>
+
+<script src="../../js/constant.js"></script>
+<script type="text/javascript" src="../../js/libs/jquery-3.3.1.min.js"></script>
+<script type="text/javascript" src="../../js/jq.js"></script>
+<script type="text/javascript" src="../../js/plugin/bootstrapvalidator/bootstrapValidator.min.js"></script>
+<script type="text/javascript" src="../../js/common.js"></script>
+<script type="text/javascript" src="../../layui/layui.js"></script>
+<script type="text/javascript">
+    layui.use('layer', function(){
+        var layer = layui.layer;
+        $.ajax({
+            type : 'get',
+            url : domainName + '/api-p/dataSource/dataSourceList',
+            async:false,
+            success : function(data) {
+                $("#datasourceName").empty();
+                $.each(data, function(key, value){
+                    var option = $("<option></option>");
+                    option.attr("value", value.id);
+                    option.text(value.name);
+                    $("#datasourceName").append(option);
+                });
+            }
+        });
+        $("#id").val(decodeURIComponent(getUrlParam("id")));
+        $("#contenttype").val(decodeURIComponent(getUrlParam("contenttype")));
+        $("#createtime").val(decodeURIComponent(getUrlParam("createtime")));
+        $("#updatetime").val(decodeURIComponent(getUrlParam("updatetime")));
+        $("#name").val(decodeURIComponent(getUrlParam("name")));
+        var param= eval("("+decodeURIComponent(getUrlParam("param"))+")");
+        $("#datasourceName").val(param.dataSourceId);
+        $.ajax({
+            type : 'get',
+            url : domainName + '/api-p/dataCollectionPropertyNopage',
+            async:false,
+            success : function(data) {
+                $("#datacollectionName").empty();
+                $.each(data, function(key, value){
+                    var datasource_id = $("#datasourceName").val();
+                    if(datasource_id == value.datasourceId)
+                    {
+                        var option = $("<option></option>");
+                        option.attr("value", value.id);
+                        option.text(value.name);
+                        $("#datacollectionName").append(option);
+                    }
+
+                });
+                datacollectionset=data;
+            }
+        });
+        $.each(datacollectionset, function(key, value){
+            if(param.dataTableName == value.name)
+            {
+                $("#datacollectionName").val(value.id);
+            }
+
+        });
+        delete param.dataSourceId;
+        delete param.dataTableName;
+        $("#splitSize").val(param.splitSize);
+        delete  param.splitSize;
+        $("#param").val(param.filePath);
+
+
+    });
+    $('#datasourceName').change(function(e)
+    {
+        var text = e.currentTarget.selectedOptions[0].text;
+        var values = e.currentTarget.selectedOptions[0].value;
+        //object-->   key:value
+        $("#datacollectionName").empty();
+        $.each(datacollectionset, function(key, value){
+            if(value.datasourceId == values)
+            {
+                var option = $("<option></option>");
+                option.attr("value", value.id);
+                option.text(value.name);
+                $("#datacollectionName").append(option);
+            }
+        });
+    })
+    function add() {
+        $('#form').bootstrapValidator();
+        var bootstrapValidator = $("#form").data('bootstrapValidator');
+        bootstrapValidator.validate();
+        if(!bootstrapValidator.isValid()){
+            return;
+        }
+        var param = {};
+        param.filePath = $("#param").val();
+        param.dataSourceId =$("#datasourceName").val() ;//$("#datasourceName").find("option:selected").text();
+        param.dataTableName = $("#datacollectionName").find("option:selected").text();
+        param.splitSize = $("#splitSize").val();
+        var formdata = $("#form").serializeObject();
+        formdata.param = JSON.stringify(param);
+        formdata.contenttype=getUrlParam("contenttype");
+        $.ajax({
+            type : 'put',
+            url : domainName + '/api-p/TaskContent/addTaskContent',
+            contentType: "application/json; charset=utf-8",
+            data : JSON.stringify(formdata),
+            success : function(data) {
+                layer.msg("成功", {shift: -1, time: 1000}, function(){
+                    location.href = "taskContentList.html";
+                });
+            }
+        });
+    }
+
+</script>
+</body>
+</html>

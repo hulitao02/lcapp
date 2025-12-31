@@ -1,0 +1,37 @@
+server:
+  port: 8082  # websocket服务无法通过zuul转发，只能通过直连，暂时固定端口（9091），后期改为gateway网关
+  connection-timeout: 18000000
+
+spring:
+  application:
+    name: exam-center
+  profiles:
+    active: dev
+  cloud:
+    nacos:
+      config:
+        server-addr: 192.168.10.203:8848
+        file-extension: yaml # 假如不配置，则nacos远程配置文件的后缀为.properties
+        shared-dataids: shared-config.yaml
+        refreshable-dataids: shared-config.yaml
+      discovery:
+        server-addr: 192.168.10.203:8848
+#        register-enabled: false
+  devtools:
+    restart:
+        #热部署生效
+      enabled: false
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: always
+
+
+
+
+

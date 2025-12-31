@@ -1,0 +1,259 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cloud.exam.dao.EvalDao">
+
+    <select id="getPersonalScore" resultType="map">
+        select COALESCE(sum(eval_score),0)  as total, count(1) as num from exam_eval where user_id = #{userId} and month = #{month}
+        <if test="kpId != null and kpId != '' ">
+            AND kp_id = ${kpId}
+        </if>
+    </select>
+
+    <select id="getPersonalScore2" resultType="map">
+        select COALESCE(sum(eval_score),0)  as total, count(1) as num from exam_eval where user_id = #{userId} and month in  (#{month}, #{lastMonth})
+        <if test="kpId != null and kpId != '' ">
+            AND kp_id = ${kpId}
+        </if>
+    </select>
+
+    <select id="getPersonalAbility" resultType="map">
+        select kp_id, round(sum(eval_score)*1.0/count(1)) as score from exam_eval where user_id = #{userId} and month = #{month}
+        <if test="kpIds != null and kpIds.length >0 ">
+            AND kp_id in
+            <foreach collection="kpIds" index="index" item="kpId" open="(" separator="," close=")" >
+                ${kpId}
+            </foreach>
+        </if>
+        group by kp_id
+    </select>
+
+    <select id="getPersonalAbility2" resultType="map">
+        select kp_id, round(sum(eval_score)*1.0/count(1)) as score from exam_eval where user_id = #{userId} and month in  (#{month}, #{lastMonth})
+        <if test="kpIds != null and kpIds.length >0 ">
+            AND kp_id in
+            <foreach collection="kpIds" index="index" item="kpId" open="(" separator="," close=")" >
+                ${kpId}
+            </foreach>
+        </if>
+        group by kp_id
+    </select>
+    
+    <select id="getPersonalQuestions" resultType="map">
+        select question.kp_id, count(1) as num from drawresult inner join paper_manage_rel on drawresult.paper_id=paper_manage_rel.paper_id  inner join question on question.id=paper_manage_rel.question_id  where drawresult.user_id = #{userId} and extract(year from login_date)*100 + extract(month from login_date) = #{month}
+        <if test="kpIds != null and kpIds.length >0 ">
+            AND kp_id in
+            <foreach collection="kpIds" index="index" item="kpId" open="(" separator="," close=")" >
+                ${kpId}
+            </foreach>
+        </if>
+        group by question.kp_id
+    </select>
+    
+    <select id="getPersonalQuestions2" resultType="map">
+        select question.kp_id, count(1) as num from drawresult inner join paper_manage_rel on drawresult.paper_id=paper_manage_rel.paper_id  inner join question on question.id=paper_manage_rel.question_id  where drawresult.user_id = #{userId} and extract(year from login_date)*100 + extract(month from login_date) in (#{month}, #{lastMonth})
+        <if test="kpIds != null and kpIds.length >0 ">
+            AND kp_id in
+            <foreach collection="kpIds" index="index" item="kpId" open="(" separator="," close=")" >
+                ${kpId}
+            </foreach>
+        </if>
+        group by question.kp_id
+    </select>
+    
+    <select id="getPersonalHisScore" resultType="map">
+        select kp_id, month, round(sum(eval_score)*1.0/count(1)) as score from exam_eval where user_id = #{userId} and month >= #{fromMonth}
+        <if test="kpIds != null and kpIds.length >0 ">
+            AND kp_id in
+            <foreach collection="kpIds" index="index" item="kpId" open="(" separator="," close=")" >
+                ${kpId}
+            </foreach>
+        </if>
+        group by kp_id, month
+    </select>
+    
+    <select id="getPersonalDeptScore" resultType="map">
+        select user_id, round(sum(eval_score)*1.0/count(1)) as score from exam_eval where month = #{month}
+        <if test="kpId != null and kpId != '' ">
+            AND kp_id = ${kpId}
+        </if>
+        <if test="userIds != null and userIds.size() >0 ">
+            AND user_id in
+            <foreach collection="userIds" index="index" item="userId" open="(" separator="," close=")" >
+                ${userId}
+            </foreach>
+        </if>
+        <if test="kpId != null ">
+            AND kp_id = ${kpId}
+        </if>
+        group by user_id order by score desc
+    </select>
+
+	<select id="getPersonalDeptScore2" resultType="map">
+        select user_id, round(sum(eval_score)*1.0/count(1)) as score from exam_eval where month in  (#{month}, #{lastMonth})
+        <if test="kpId != null and kpId != '' ">
+            AND kp_id = ${kpId}
+        </if>
+        <if test="userIds != null and userIds.size() >0 ">
+            AND user_id in
+            <foreach collection="userIds" index="index" item="userId" open="(" separator="," close=")" >
+                ${userId}
+            </foreach>
+        </if>
+        <if test="kpId != null ">
+            AND kp_id = ${kpId}
+        </if> 
+        group by user_id order by score desc
+    </select>
+    
+    <select id="queryExamUserKpId" resultType="map">
+        select question.kp_id, (case when question.difficulty>=0.8 then 5 when question.difficulty>=0.6 then 4 when question.difficulty>=0.4 then 3 when question.difficulty>=0.2 then 2 else 1 end) as n,
+        sum(paper_manage_rel.score) as z,  sum(student_answer.actual_score) as s
+        from drawresult inner join paper_manage_rel on drawresult.paper_id = paper_manage_rel.paper_id inner join question on paper_manage_rel.question_id=question.id
+        inner  join student_answer on student_answer.question_id = paper_manage_rel.question_id
+        where drawresult.paper_id=#{paperId} and drawresult.user_id=#{userId} and student_answer.student_id = #{userId}
+        group by question.kp_id, (case when question.difficulty>=0.8 then 5 when question.difficulty>=0.6 then 4 when question.difficulty>=0.4 then 3 when question.difficulty>=0.2 then 2 else 1 end)
+    </select>
+    
+    <select id="getDeptScore" resultType="double">
+        select sum(user_score)/count(1) as dept_score from (select sum(eval_score)*1.0/count(1) as user_score from exam_eval where department_id = #{deptId} and month = #{month}
+        <if test="kpId != null and kpId != '' ">
+            AND kp_id = ${kpId}
+        </if>
+        group by user_id) as t
+    </select>
+    
+    <select id="getDeptScore2" resultType="double">
+        select sum(user_score)/count(1) as dept_score from (select sum(eval_score)*1.0/count(1) as user_score from exam_eval where department_id = #{deptId} and month in  (#{month}, #{lastMonth})
+        <if test="kpId != null and kpId != '' ">
+            AND kp_id = ${kpId}
+        </if>
+        group by user_id) as t
+    </select>
+    
+    <select id="getDeptKpScore" resultType="map">
+        select kp_id, sum(user_score)/count(1) as dept_score from (select kp_id, user_id, sum(eval_score)*1.0/count(1) as user_score from exam_eval where department_id = #{deptId} and month = #{month}
+        <if test="kpIds != null and kpIds.length >0 ">
+            AND kp_id in
+            <foreach collection="kpIds" index="index" item="kpId" open="(" separator="," close=")" >
+                ${kpId}
+            </foreach>
+        </if>
+        group by kp_id, user_id) as t group by kp_id
+    </select>
+    
+    <select id="getDeptKpScore2" resultType="map">
+        select kp_id, sum(user_score)/count(1) as dept_score from (select kp_id, user_id, sum(eval_score)*1.0/count(1) as user_score from exam_eval where department_id = #{deptId} and month in  (#{month}, #{lastMonth})
+        <if test="kpIds != null and kpIds.length >0 ">
+            AND kp_id in
+            <foreach collection="kpIds" index="index" item="kpId" open="(" separator="," close=")" >
+                ${kpId}
+            </foreach>
+        </if>
+        group by kp_id, user_id) as t group by kp_id
+    </select>
+    
+    <select id="getDeptAbility" resultType="map">
+        select kp_id,user_id , round(sum(eval_score)*1.0/count(1)) as score from exam_eval where department_id = #{deptId} and month = #{month}
+        <if test="kpIds != null and kpIds.length >0 ">
+            AND kp_id in
+            <foreach collection="kpIds" index="index" item="kpId" open="(" separator="," close=")" >
+                ${kpId}
+            </foreach>
+        </if>
+        group by kp_id, user_id
+    </select>
+    
+    <select id="getDeptAbility2" resultType="map">
+        select kp_id, user_id, round(sum(eval_score)*1.0/count(1)) as score from exam_eval where department_id = #{deptId} and month in (#{month}, #{lastMonth})
+        <if test="kpIds != null and kpIds.length >0 ">
+            AND kp_id in
+            <foreach collection="kpIds" index="index" item="kpId" open="(" separator="," close=")" >
+                ${kpId}
+            </foreach>
+        </if>
+        group by kp_id, user_id
+    </select>
+    
+    <select id="getDeptDistribution" resultType="map">
+        select user_id, round(sum(eval_score)*1.0/count(1)) as score from exam_eval where department_id = #{deptId} and month = #{month}
+        <if test="kpId != null and kpId != '' ">
+            AND kp_id = ${kpId}
+        </if>
+        group by user_id
+    </select>
+    
+    <select id="getDeptDistribution2" resultType="map">
+        select user_id, round(sum(eval_score)*1.0/count(1)) as score from exam_eval where department_id = #{deptId} and month in (#{month}, #{lastMonth})
+        <if test="kpId != null and kpId != '' ">
+            AND kp_id = ${kpId}
+        </if>
+        group by user_id
+    </select>
+    
+    <select id="getDeptQuestions" resultType="map">
+        select user_id, count(1) as num from drawresult inner join paper_manage_rel on drawresult.paper_id=paper_manage_rel.paper_id  inner join question on question.id=paper_manage_rel.question_id  where drawresult.depart_id = #{deptId} and extract(year from login_date)*100 + extract(month from login_date) = #{month}
+        <if test="kpId != null and kpId != '' ">
+            AND kp_id = ${kpId}
+        </if>
+        group by user_id
+    </select>
+    
+    <select id="getDeptQuestions2" resultType="map">
+        select user_id, count(1) as num from drawresult inner join paper_manage_rel on drawresult.paper_id=paper_manage_rel.paper_id  inner join question on question.id=paper_manage_rel.question_id  where drawresult.depart_id = #{deptId} and extract(year from login_date)*100 + extract(month from login_date) in (#{month}, #{lastMonth})
+        <if test="kpId != null and kpId != '' ">
+            AND kp_id = ${kpId}
+        </if>
+        group by user_id
+    </select>
+    
+    <select id="getExamDeptEval" resultType="map">
+    	select department_id, sum(user_score)*1.0/count(1) as dept_score from (select department_id, user_id, sum(eval_score)*1.0/count(1) as user_score from exam_eval where ac_id = #{examId} 
+    	<if test="paperId != null and paperId != '' ">
+    		and paper_id = #{paperId}
+    	</if>
+    	group by department_id, user_id) as t group by department_id
+	</select>
+	
+	<select id="getExamDeptScore" resultType="map">
+    	select depart_id, count(1) as num, sum(score) as total_score from drawresult where ac_id = #{examId} 
+    	<if test="paperId != null and paperId != '' ">
+    		and paper_id = #{paperId} 
+    	</if>
+    	group by depart_id
+	</select>
+	
+	<select id="getExamDeptDetail" resultType="map">
+    	select kp_id, sum(eval_score)*1.0/count(1) as score from exam_eval where ac_id = #{examId} and department_id = #{deptId}
+    	<if test="paperId != null and paperId != '' ">
+    	and paper_id = #{paperId}
+    	</if>
+    	group by kp_id
+	</select>
+	
+	<select id="getExamPersonalEval" resultType="map">
+    	select user_id, sum(eval_score)*1.0/count(1) as user_score from exam_eval where ac_id = #{examId} and department_id = #{deptId}
+    	<if test="paperId != null and paperId != '' ">
+    	and paper_id = #{paperId}
+    	</if>
+    	group by user_id
+	</select>
+	
+	<select id="getExamPersonalScore" resultType="map">
+    	select user_id, sum(score) as exam_score from drawresult where ac_id = #{examId} and depart_id = #{deptId} 
+    	<if test="paperId != null and paperId != '' ">
+    	and paper_id = #{paperId}
+    	</if>
+    	group by user_id
+	</select>
+	
+	<select id="getExamPersonalDetail" resultType="map">
+    	select kp_id, sum(eval_score)*1.0/count(1) as score from exam_eval where ac_id = #{examId} and user_id = #{userId}
+    	<if test="paperId != null and paperId != '' ">
+    	and paper_id = #{paperId}
+    	</if>
+    	group by kp_id
+	</select>
+</mapper>
+
+

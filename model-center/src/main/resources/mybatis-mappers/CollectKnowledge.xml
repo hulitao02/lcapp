@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cloud.model.dao.CollectKnowledgeDao">
+
+
+    <!--胡 根据用户id，知识id查询收藏信息-->
+    <select id="getCollectKnowledge" resultType="map">
+        SELECT
+        *
+        FROM
+        collect_knowledge
+        WHERE
+        user_id = #{userId}
+        <if test="sensesId!=null and sensesId!='' ">
+            AND senses_id =#{sensesId}
+        </if>
+    </select>
+
+
+    <!--    知识学习统计-->
+    <select id="statisticsStudyCount" resultType="java.util.HashMap" parameterType="map">
+        SELECT
+            to_char( ck.create_time, 'yyyy-MM' ) AS date,
+        count (*)
+        FROM
+            collect_knowledge ck
+        <where>
+            <if test="userId != null">
+                and ck.user_id = #{userId}
+            </if>
+            <if test="paramsDate != null">
+                -- 查询参数，年份
+                AND to_char( ck.create_time, 'yyyy' ) = #{paramsDate}
+            </if>
+        </where>
+        GROUP BY
+        -- 按照月份分组，
+        to_char( ck.create_time, 'yyyy-MM' )
+    </select>
+
+
+
+    <!--  知识统计，学习总量前10 学员-->
+    <select id="knStudyUserCountGroup" resultType="java.util.HashMap" parameterType="map">
+        SELECT
+            ck.user_id as userid,
+            COUNT (*) as count
+        FROM
+            collect_knowledge ck
+        where ck.study_status = 1
+        GROUP BY
+            userid
+        ORDER BY count DESC
+        LIMIT 10
+    </select>
+
+
+    <!--  知识统计，学习总量前10 学员-->
+    <select id="getKnCountGroupbyKnId" resultType="java.util.HashMap" parameterType="map">
+
+        -- 统计学习数量最多的
+        SELECT
+            ck.senses_name,
+            COUNT (*) AS count
+        FROM
+            collect_knowledge ck
+        GROUP BY
+            ck.senses_name
+        ORDER BY
+            count DESC
+            LIMIT 10
+    </select>
+
+    <delete id="delCollectionKnowledge" parameterType="list">
+        DELETE
+        FROM
+        collect_knowledge
+        WHERE
+        1 = 1
+        <if test="kIds != null and kIds.length >0 ">
+            AND senses_id in
+            <foreach collection="kIds" index="index" item="kId" open="(" separator="," close=")" >
+                ${kId}
+            </foreach>
+        </if>
+    </delete>
+
+
+
+</mapper>

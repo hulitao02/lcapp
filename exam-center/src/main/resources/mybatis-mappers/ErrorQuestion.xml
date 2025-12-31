@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cloud.exam.dao.ErrorQuestionDao">
+
+
+    <!-- 根据参数查询错误试题信息-->
+    <select id="findByPar" parameterType="map" resultType="map">
+        SELECT
+        *
+        FROM
+        error_question
+        WHERE
+        1 = 1
+        AND user_id = #{userId}
+        AND question_id =#{questionId}
+    </select>
+
+
+    <!-- 错误试题列表-->
+    <select id="errorList" parameterType="map" resultType="map">
+        SELECT
+        answer.question_id,
+        answer.actual_score,
+        answer.TYPE,
+        pm.score,
+        q.question
+        FROM
+        student_answer AS answer,
+        paper_manage_rel AS pm,
+        question AS q
+        WHERE
+        1 = 1
+        AND student_id = #{studentId}
+        AND answer.paper_id= #{paperId}
+        AND answer.paper_id = pm.paper_id
+        AND answer.question_id = pm.question_id
+        AND answer.question_id = q.ID
+        AND answer.actual_score &lt; pm.score
+    </select>
+
+    <!-- 添加错误试题-->
+    <insert id="saveInfo" parameterType="map">
+        INSERT INTO error_question ( question_id, user_id, create_time,question,type )
+        VALUES
+        ( #{questionId}, #{userId}, #{createTime},#{question},#{type} )
+    </insert>
+
+
+    <!-- 修改错误试题的创建时间 -->
+    <update id="updateInfo" parameterType="map">
+        UPDATE error_question
+        SET create_time = #{createTime}
+        WHERE
+        1 = 1
+        AND ID = #{id}
+    </update>
+</mapper>
+
+

@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Insert title here</title>
+    <link
+      rel="stylesheet"
+      type="text/css"
+      media="screen"
+      href="../../css/bootstrap.min.css"
+    />
+    <link
+      rel="stylesheet"
+      type="text/css"
+      media="screen"
+      href="../../css/dataTables.bootstrap.min.css"
+    />
+    <link
+      rel="stylesheet"
+      type="text/css"
+      media="screen"
+      href="../../layui/css/layui.css"
+    />
+  </head>
+  <style>
+    .layui-form {
+      width: 500px;
+      height: 400px;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: #ffffff;
+      border: 1px solid #ccc;
+      display: none;
+    }
+    .layui-form > p {
+      font-size: 20px;
+      font-weight: 600;
+      margin: 5px 10px;
+    }
+    .layui-form-label {
+      width: 100px;
+    }
+    .layui-form-item {
+      margin-right: 15px;
+    }
+  </style>
+  <body>
+    <div>
+      <button type="submit" class="layui-btn" id="add">添加工具</button>
+      <div class="layui-tab layui-tab-brief" lay-filter="docDemoTabBrief">
+        <ul class="layui-tab-title">
+          <li class="layui-this">全部工具</li>
+          <li>JAVA</li>
+          <li>Python</li>
+          <li>C/C++</li>
+          <li>R语言</li>
+          <li>Oracle</li>
+          <li>MySQL</li>
+          <li>PostGreSQL</li>
+          <li>Office</li>
+        </ul>
+        <div class="layui-tab-content">
+          <div class="layui-tab-item layui-show">
+            <div
+              style="
+                width: 220px;
+                height: 400px;
+                text-align: center;
+                float: left;
+              "
+            >
+              <img
+                src="../../assets/images/258fa142-team-al-1.jpg"
+                style="width: 200px; height: 200px; margin: 10px"
+                alt=""
+              />
+              <p style="font-size: 28px; font-weight: 700; margin: 10px 0">
+                Eclipse
+              </p>
+              <button class="layui-btn layui-btn-primary" style="width: 100px">
+                删除
+              </button>
+            </div>
+            <div
+              style="
+                width: 220px;
+                height: 400px;
+                text-align: center;
+                float: left;
+              "
+            >
+              <img
+                src="../../assets/images/258fa142-team-al-1.jpg"
+                style="width: 200px; height: 200px; margin: 10px"
+                alt=""
+              />
+              <p style="font-size: 28px; font-weight: 700; margin: 10px 0">
+                Eclipse
+              </p>
+              <button class="layui-btn layui-btn-primary" style="width: 100px">
+                删除
+              </button>
+            </div>
+            <div
+              style="
+                width: 220px;
+                height: 400px;
+                text-align: center;
+                float: left;
+              "
+            >
+              <img
+                src="../../assets/images/258fa142-team-al-1.jpg"
+                style="width: 200px; height: 200px; margin: 10px"
+                alt=""
+              />
+              <p style="font-size: 28px; font-weight: 700; margin: 10px 0">
+                Eclipse
+              </p>
+              <button class="layui-btn layui-btn-primary" style="width: 100px">
+                删除
+              </button>
+            </div>
+            <div
+              style="
+                width: 220px;
+                height: 400px;
+                text-align: center;
+                float: left;
+              "
+            >
+              <img
+                src="../../assets/images/258fa142-team-al-1.jpg"
+                style="width: 200px; height: 200px; margin: 10px"
+                alt=""
+              />
+              <p style="font-size: 28px; font-weight: 700; margin: 10px 0">
+                Eclipse
+              </p>
+              <button class="layui-btn layui-btn-primary" style="width: 100px">
+                删除
+              </button>
+            </div>
+            <div
+              style="
+                width: 220px;
+                height: 400px;
+                text-align: center;
+                float: left;
+              "
+            >
+              <img
+                src="../../assets/images/258fa142-team-al-1.jpg"
+                style="width: 200px; height: 200px; margin: 10px"
+                alt=""
+              />
+              <p style="font-size: 28px; font-weight: 700; margin: 10px 0">
+                Eclipse
+              </p>
+              <button class="layui-btn layui-btn-primary" style="width: 100px">
+                删除
+              </button>
+            </div>
+            <div
+              style="
+                width: 220px;
+                height: 400px;
+                text-align: center;
+                float: left;
+              "
+            >
+              <img
+                src="../../assets/images/258fa142-team-al-1.jpg"
+                style="width: 200px; height: 200px; margin: 10px"
+                alt=""
+              />
+              <p style="font-size: 28px; font-weight: 700; margin: 10px 0">
+                Eclipse
+              </p>
+              <button class="layui-btn layui-btn-primary" style="width: 100px">
+                删除
+              </button>
+            </div>
+            <div
+              style="
+                width: 220px;
+                height: 400px;
+                text-align: center;
+                float: left;
+              "
+            >
+              <img
+                src="../../assets/images/258fa142-team-al-1.jpg"
+                style="width: 200px; height: 200px; margin: 10px"
+                alt=""
+              />
+              <p style="font-size: 28px; font-weight: 700; margin: 10px 0">
+                Eclipse
+              </p>
+              <button class="layui-btn layui-btn-primary" style="width: 100px">
+                删除
+              </button>
+            </div>
+            <div
+              style="
+                width: 220px;
+                height: 400px;
+                text-align: center;
+                float: left;
+              "
+            >
+              <img
+                src="../../assets/images/258fa142-team-al-1.jpg"
+                style="width: 200px; height: 200px; margin: 10px"
+                alt=""
+              />
+              <p style="font-size: 28px; font-weight: 700; margin: 10px 0">
+                Eclipse
+              </p>
+              <button class="layui-btn layui-btn-primary" style="width: 100px">
+                删除
+              </button>
+            </div>
+            <div
+              style="
+                width: 220px;
+                height: 400px;
+                text-align: center;
+                float: left;
+              "
+            >
+              <img
+                src="../../assets/images/258fa142-team-al-1.jpg"
+                style="width: 200px; height: 200px; margin: 10px"
+                alt=""
+              />
+              <p style="font-size: 28px; font-weight: 700; margin: 10px 0">
+                Eclipse
+              </p>
+              <button class="layui-btn layui-btn-primary" style="width: 100px">
+                删除
+              </button>
+            </div>
+            <div
+              style="
+                width: 220px;
+                height: 400px;
+                text-align: center;
+                float: left;
+              "
+            >
+              <img
+                src="../../assets/images/258fa142-team-al-1.jpg"
+                style="width: 200px; height: 200px; margin: 10px"
+                alt=""
+              />
+              <p style="font-size: 28px; font-weight: 700; margin: 10px 0">
+                Eclipse
+              </p>
+              <button class="layui-btn layui-btn-primary" style="width: 100px">
+                删除
+              </button>
+            </div>
+            <div
+              style="
+                width: 220px;
+                height: 400px;
+                text-align: center;
+                float: left;
+              "
+            >
+              <img
+                src="../../assets/images/258fa142-team-al-1.jpg"
+                style="width: 200px; height: 200px; margin: 10px"
+                alt=""
+              />
+              <p style="font-size: 28px; font-weight: 700; margin: 10px 0">
+                Eclipse
+              </p>
+              <button class="layui-btn layui-btn-primary" style="width: 100px">
+                删除
+              </button>
+            </div>
+            <div
+              style="
+                width: 220px;
+                height: 400px;
+                text-align: center;
+                float: left;
+              "
+            >
+              <img
+                src="../../assets/images/258fa142-team-al-1.jpg"
+                style="width: 200px; height: 200px; margin: 10px"
+                alt=""
+              />
+              <p style="font-size: 28px; font-weight: 700; margin: 10px 0">
+                Eclipse
+              </p>
+              <button class="layui-btn layui-btn-primary" style="width: 100px">
+                删除
+              </button>
+            </div>
+          </div>
+          <div class="layui-tab-item">
+            <div
+              style="
+                width: 220px;
+                height: 400px;
+                text-align: center;
+                float: left;
+              "
+            >
+              <img
+                src="../../assets/images/258fa142-team-al-1.jpg"
+                style="width: 200px; height: 200px; margin: 10px"
+                alt=""
+              />
+              <p style="font-size: 28px; font-weight: 700; margin: 10px 0">
+                Eclipse
+              </p>
+              <button class="layui-btn layui-btn-primary" style="width: 100px">
+                删除
+              </button>
+            </div>
+            <div
+              style="
+                width: 220px;
+                height: 400px;
+                text-align: center;
+                float: left;
+              "
+            >
+              <img
+                src="../../assets/images/258fa142-team-al-1.jpg"
+                style="width: 200px; height: 200px; margin: 10px"
+                alt=""
+              />
+              <p style="font-size: 28px; font-weight: 700; margin: 10px 0">
+                Eclipse
+              </p>
+              <button class="layui-btn layui-btn-primary" style="width: 100px">
+                删除
+              </button>
+            </div>
+            <div
+              style="
+                width: 220px;
+                height: 400px;
+                text-align: center;
+                float: left;
+              "
+            >
+              <img
+                src="../../assets/images/258fa142-team-al-1.jpg"
+                style="width: 200px; height: 200px; margin: 10px"
+                alt=""
+              />
+              <p style="font-size: 28px; font-weight: 700; margin: 10px 0">
+                Eclipse
+              </p>
+              <button class="layui-btn layui-btn-primary" style="width: 100px">
+                删除
+              </button>
+            </div>
+            <div
+              style="
+                width: 220px;
+                height: 400px;
+                text-align: center;
+                float: left;
+              "
+            >
+              <img
+                src="../../assets/images/258fa142-team-al-1.jpg"
+                style="width: 200px; height: 200px; margin: 10px"
+                alt=""
+              />
+              <p style="font-size: 28px; font-weight: 700; margin: 10px 0">
+                Eclipse
+              </p>
+              <button class="layui-btn layui-btn-primary" style="width: 100px">
+                删除
+              </button>
+            </div>
+          </div>
+          <div class="layui-tab-item">
+            <div
+              style="
+                width: 220px;
+                height: 400px;
+                text-align: center;
+                float: left;
+              "
+            >
+              <img
+                src="../../assets/images/258fa142-team-al-1.jpg"
+                style="width: 200px; height: 200px; margin: 10px"
+                alt=""
+              />
+              <p style="font-size: 28px; font-weight: 700; margin: 10px 0">
+                Eclipse
+              </p>
+              <button class="layui-btn layui-btn-primary" style="width: 100px">
+                删除
+              </button>
+            </div>
+          </div>
+          <div class="layui-tab-item">
+            <div
+              style="
+                width: 220px;
+                height: 400px;
+                text-align: center;
+                float: left;
+              "
+            >
+              <img
+                src="../../assets/images/258fa142-team-al-1.jpg"
+                style="width: 200px; height: 200px; margin: 10px"
+                alt=""
+              />
+              <p style="font-size: 28px; font-weight: 700; margin: 10px 0">
+                Eclipse
+              </p>
+              <button class="layui-btn layui-btn-primary" style="width: 100px">
+                删除
+              </button>
+            </div>
+            <div
+              style="
+                width: 220px;
+                height: 400px;
+                text-align: center;
+                float: left;
+              "
+            >
+              <img
+                src="../../assets/images/258fa142-team-al-1.jpg"
+                style="width: 200px; height: 200px; margin: 10px"
+                alt=""
+              />
+              <p style="font-size: 28px; font-weight: 700; margin: 10px 0">
+                Eclipse
+              </p>
+              <button class="layui-btn layui-btn-primary" style="width: 100px">
+                删除
+              </button>
+            </div>
+            <div
+              style="
+                width: 220px;
+                height: 400px;
+                text-align: center;
+                float: left;
+              "
+            >
+              <img
+                src="../../assets/images/258fa142-team-al-1.jpg"
+                style="width: 200px; height: 200px; margin: 10px"
+                alt=""
+              />
+              <p style="font-size: 28px; font-weight: 700; margin: 10px 0">
+                Eclipse
+              </p>
+              <button class="layui-btn layui-btn-primary" style="width: 100px">
+                删除
+              </button>
+            </div>
+          </div>
+          <div class="layui-tab-item">
+            <div
+              style="
+                width: 220px;
+                height: 400px;
+                text-align: center;
+                float: left;
+              "
+            >
+              <img
+                src="../../assets/images/258fa142-team-al-1.jpg"
+                style="width: 200px; height: 200px; margin: 10px"
+                alt=""
+              />
+              <p style="font-size: 28px; font-weight: 700; margin: 10px 0">
+                Eclipse
+              </p>
+              <button class="layui-btn layui-btn-primary" style="width: 100px">
+                删除
+              </button>
+            </div>
+          </div>
+          <div class="layui-tab-item">
+            <div
+              style="
+                width: 220px;
+                height: 400px;
+                text-align: center;
+                float: left;
+              "
+            >
+              <img
+                src="../../assets/images/258fa142-team-al-1.jpg"
+                style="width: 200px; height: 200px; margin: 10px"
+                alt=""
+              />
+              <p style="font-size: 28px; font-weight: 700; margin: 10px 0">
+                Eclipse
+              </p>
+              <button class="layui-btn layui-btn-primary" style="width: 100px">
+                删除
+              </button>
+            </div>
+            <div
+              style="
+                width: 220px;
+                height: 400px;
+                text-align: center;
+                float: left;
+              "
+            >
+              <img
+                src="../../assets/images/258fa142-team-al-1.jpg"
+                style="width: 200px; height: 200px; margin: 10px"
+                alt=""
+              />
+              <p style="font-size: 28px; font-weight: 700; margin: 10px 0">
+                Eclipse
+              </p>
+              <button class="layui-btn layui-btn-primary" style="width: 100px">
+                删除
+              </button>
+            </div>
+          </div>
+          <div class="layui-tab-item">
+            <div
+              style="
+                width: 220px;
+                height: 400px;
+                text-align: center;
+                float: left;
+              "
+            >
+              <img
+                src="../../assets/images/258fa142-team-al-1.jpg"
+                style="width: 200px; height: 200px; margin: 10px"
+                alt=""
+              />
+              <p style="font-size: 28px; font-weight: 700; margin: 10px 0">
+                Eclipse
+              </p>
+              <button class="layui-btn layui-btn-primary" style="width: 100px">
+                删除
+              </button>
+            </div>
+            <div
+              style="
+                width: 220px;
+                height: 400px;
+                text-align: center;
+                float: left;
+              "
+            >
+              <img
+                src="../../assets/images/258fa142-team-al-1.jpg"
+                style="width: 200px; height: 200px; margin: 10px"
+                alt=""
+              />
+              <p style="font-size: 28px; font-weight: 700; margin: 10px 0">
+                Eclipse
+              </p>
+              <button class="layui-btn layui-btn-primary" style="width: 100px">
+                删除
+              </button>
+            </div>
+            <div
+              style="
+                width: 220px;
+                height: 400px;
+                text-align: center;
+                float: left;
+              "
+            >
+              <img
+                src="../../assets/images/258fa142-team-al-1.jpg"
+                style="width: 200px; height: 200px; margin: 10px"
+                alt=""
+              />
+              <p style="font-size: 28px; font-weight: 700; margin: 10px 0">
+                Eclipse
+              </p>
+              <button class="layui-btn layui-btn-primary" style="width: 100px">
+                删除
+              </button>
+            </div>
+            <div
+              style="
+                width: 220px;
+                height: 400px;
+                text-align: center;
+                float: left;
+              "
+            >
+              <img
+                src="../../assets/images/258fa142-team-al-1.jpg"
+                style="width: 200px; height: 200px; margin: 10px"
+                alt=""
+              />
+              <p style="font-size: 28px; font-weight: 700; margin: 10px 0">
+                Eclipse
+              </p>
+              <button class="layui-btn layui-btn-primary" style="width: 100px">
+                删除
+              </button>
+            </div>
+            <div
+              style="
+                width: 220px;
+                height: 400px;
+                text-align: center;
+                float: left;
+              "
+            >
+              <img
+                src="../../assets/images/258fa142-team-al-1.jpg"
+                style="width: 200px; height: 200px; margin: 10px"
+                alt=""
+              />
+              <p style="font-size: 28px; font-weight: 700; margin: 10px 0">
+                Eclipse
+              </p>
+              <button class="layui-btn layui-btn-primary" style="width: 100px">
+                删除
+              </button>
+            </div>
+          </div>
+          <div class="layui-tab-item">
+            <div
+              style="
+                width: 220px;
+                height: 400px;
+                text-align: center;
+                float: left;
+              "
+            >
+              <img
+                src="../../assets/images/258fa142-team-al-1.jpg"
+                style="width: 200px; height: 200px; margin: 10px"
+                alt=""
+              />
+              <p style="font-size: 28px; font-weight: 700; margin: 10px 0">
+                Eclipse
+              </p>
+              <button class="layui-btn layui-btn-primary" style="width: 100px">
+                删除
+              </button>
+            </div>
+          </div>
+          <div class="layui-tab-item">
+            <div
+              style="
+                width: 220px;
+                height: 400px;
+                text-align: center;
+                float: left;
+              "
+            >
+              <img
+                src="../../assets/images/258fa142-team-al-1.jpg"
+                style="width: 200px; height: 200px; margin: 10px"
+                alt=""
+              />
+              <p style="font-size: 28px; font-weight: 700; margin: 10px 0">
+                Eclipse
+              </p>
+              <button class="layui-btn layui-btn-primary" style="width: 100px">
+                删除
+              </button>
+            </div>
+            <div
+              style="
+                width: 220px;
+                height: 400px;
+                text-align: center;
+                float: left;
+              "
+            >
+              <img
+                src="../../assets/images/258fa142-team-al-1.jpg"
+                style="width: 200px; height: 200px; margin: 10px"
+                alt=""
+              />
+              <p style="font-size: 28px; font-weight: 700; margin: 10px 0">
+                Eclipse
+              </p>
+              <button class="layui-btn layui-btn-primary" style="width: 100px">
+                删除
+              </button>
+            </div>
+            <div
+              style="
+                width: 220px;
+                height: 400px;
+                text-align: center;
+                float: left;
+              "
+            >
+              <img
+                src="../../assets/images/258fa142-team-al-1.jpg"
+                style="width: 200px; height: 200px; margin: 10px"
+                alt=""
+              />
+              <p style="font-size: 28px; font-weight: 700; margin: 10px 0">
+                Eclipse
+              </p>
+              <button class="layui-btn layui-btn-primary" style="width: 100px">
+                删除
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <form action="" class="layui-form">
+        <p>添加工具</p>
+        <div class="layui-form-item">
+          <label class="layui-form-label">工具名称</label>
+          <div class="layui-input-block">
+            <input type="text" class="layui-input" />
+          </div>
+        </div>
+        <div class="layui-form-item">
+          <label class="layui-form-label">工具文件</label>
+          <div class="layui-input-block">
+            <input
+              type="text"
+              class="layui-input"
+              style="display: inline-block; width: 260px"
+            />
+            <button class="layui-btn" style="float: right">上传工具</button>
+          </div>
+        </div>
+        <div class="layui-form-item">
+          <label class="layui-form-label">缩略图</label>
+          <div class="layui-input-block">
+            <img
+              src="../../assets/images/8b75635e-final-nature.png"
+              style="width: 120px; height: 120px"
+              alt=""
+            />
+          </div>
+        </div>
+        <div>
+          <input
+            type="text"
+            class="layui-input"
+            style="display: inline-block; width: 260px;margin: 0 0 0 22%;"
+          /><button class="layui-btn" style="float: right;margin: 0 52px 0 0;">浏览...</button>
+        </div>
+        <div style="text-align: center;margin: 10px 0;">
+          <button class="layui-btn">确认</button>
+          <button class="layui-btn">取消</button>
+        </div>
+      </form>
+    </div>
+  </body>
+  <script src="../../js/constant.js"></script>
+  <script
+    type="text/javascript"
+    src="../../js/libs/jquery-3.3.1.min.js"
+  ></script>
+  <script type="text/javascript" src="../../js/jq.js"></script>
+  <script
+    type="text/javascript"
+    src="../../js/plugin/datatables/jquery.dataTables.min.js"
+  ></script>
+  <script
+    type="text/javascript"
+    src="../../js/plugin/datatables/dataTables.bootstrap.min.js"
+  ></script>
+  <script type="text/javascript" src="../../layui/layui-2.6.js"></script>
+  <script type="text/javascript" src="../../js/my/permission.js"></script>
+  <script type="text/javascript">
+    // domainName = "";
+    $("#add").on('click',function(){
+        $(".layui-form").show();
+        return false;
+    });
+
+    $(".layui-form").on('click',function(){
+        $(".layui-form").hide();
+        return false;
+    });
+  </script>
+</html>

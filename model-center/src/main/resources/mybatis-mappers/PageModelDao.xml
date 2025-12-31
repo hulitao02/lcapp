@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cloud.model.dao.PageModelDao">
+
+    <select id="getVoListByGroupId" resultType="com.cloud.model.bean.vo.PageModelVo">
+        SELECT id,
+            name,
+            service_path,
+            pic_path,
+            group_id,
+            creator,
+            create_time
+        FROM
+            page_model
+        WHERE
+            group_id = #{groupId}
+        ORDER BY
+            create_time DESC
+    </select>
+</mapper>

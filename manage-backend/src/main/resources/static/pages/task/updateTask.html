@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en-us" id="extr-page">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" type="text/css" media="screen" href="../../css/bootstrap.min.css">
+</head>
+<body>
+<div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+    <form class="form-horizontal" onsubmit="return false" id="form">
+        <input type="hidden" id="id" name="id">
+        <input type="hidden" id="progress" name="progress">
+        <input type="hidden" id="level" name="level">
+        <input type="hidden" id="username" name="username">
+        <input type="hidden" id="starttime" name="starttime">
+        <input type="hidden" id="endtime" name="endtime">
+        <fieldset>
+            <div class="form-group">
+                <label class="col-md-2 control-label">任务类型</label>
+                <div class="col-md-10">
+                    <select class="form-control input-sm" name="type" id="type">
+                        <option value="1">即时任务</option>
+                        <option value="2">条件非周期任务</option>
+                        <option value="3">条件周期任务</option>
+                    </select>
+                </div>
+
+            </div>
+            <div class="form-group">
+                <label class="col-md-2 control-label">任务名称</label>
+                <div class="col-md-10">
+                    <input class="form-control" placeholder="任务名称" type="text" name="name" id="name" maxlength="320"
+                           data-bv-notempty="true"
+                           data-bv-notempty-message="任务名称 不能为空">
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-md-2 control-label">任务状态</label>
+                <div class="col-md-10">
+                    <select class="form-control input-sm" id="status" name="status">
+                        <option value="1">运行状态</option>
+                        <option value="2">完成状态</option>
+                        <option value="3">错误状态</option>
+                        <option value="4">等待开始</option>
+                        <option value="5">暂停状态</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-md-2 control-label">任务内容</label>
+                <div class="col-md-10">
+                    <select class="form-control input-sm" name="content" id="content">
+
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-md-2 control-label">任务策略</label>
+                <div class="col-md-10">
+                    <select class="form-control input-sm" name="strategy" id="strategy">
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-md-2 control-label">任务所在机器IP地址</label>
+                <div class="col-md-10">
+                    <input class="form-control" placeholder="任务所在机器IP地址" type="text" name="location" id="location" maxlength="320"
+                           data-bv-notempty="true"
+                           data-bv-notempty-message="任务所在机器IP地址 不能为空">
+                </div>
+            </div>
+            <div class="form-actions">
+                <div class="row" align="center">
+                    <div class="col-md-12">
+                        <button class="btn btn-primary" onclick="rebacks()">返回</button>
+                        <button class="btn btn-primary" type="submit" onclick="add()">
+                            <i class="fa fa-save"></i> 保存
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </fieldset>
+    </form>
+</div>
+
+<script src="../../js/constant.js"></script>
+<script type="text/javascript" src="../../js/libs/jquery-3.3.1.min.js"></script>
+<script type="text/javascript" src="../../js/jq.js"></script>
+<script type="text/javascript" src="../../js/plugin/bootstrapvalidator/bootstrapValidator.min.js"></script>
+<script type="text/javascript" src="../../js/common.js"></script>
+<script type="text/javascript" src="../../layui/layui.js"></script>
+<script type="text/javascript">
+    function rebacks()
+    {
+        location.href='taskList.html';
+    }
+    layui.use('layer', function(){
+        var layer = layui.layer;
+        $.ajax({
+            type : 'get',
+            url : domainName + '/api-p/TaskContent/getListTaskContent/getListTaskContentByParamsNoPage',
+            async:false,
+            success : function(data) {
+                $.each(data, function(key, value){
+                    var option = $("<option></option>");
+                    option.attr("value", value.id);
+                    option.text(value.name);
+                    $("#content").append(option);
+
+                });
+                dataset=data;
+            }
+        });
+        $.ajax({
+            type : 'get',
+            url : domainName + '/api-p/Strategy/getStrategyConfigListNoPage',
+            async:false,
+            success : function(data) {
+                $.each(data, function(key, value){
+                    var option = $("<option></option>");
+                    option.attr("value", value.id);
+                    option.text(value.name);
+                    $("#strategy").append(option);
+
+                });
+                dataset=data;
+            }
+        });
+        $("#id").val(getUrlParam('id'));
+        $("#type").val(decodeURIComponent(getUrlParam('type')));
+        $("#name").val(decodeURIComponent(getUrlParam('name')));
+        $("#content").val(decodeURIComponent(getUrlParam('content')));
+        $("#status").val(decodeURIComponent(getUrlParam('status')));
+        $("#progress").val(decodeURIComponent(getUrlParam('progress')));
+        $("#level").val(decodeURIComponent(getUrlParam('level')));
+        $("#username").val(decodeURIComponent(getUrlParam('username')));
+        $("#location").val(decodeURIComponent(getUrlParam('location')));
+        $("#strategy").val(decodeURIComponent(getUrlParam('strategy')));
+        $("#starttime").val(decodeURIComponent(getUrlParam('starttime')));
+        $("#endtime").val(decodeURIComponent(getUrlParam('endtime')));
+    });
+
+    function add() {
+        $('#form').bootstrapValidator();
+        var bootstrapValidator = $("#form").data('bootstrapValidator');
+        bootstrapValidator.validate();
+        if(!bootstrapValidator.isValid()){
+            return;
+        }
+
+        var formdata = $("#form").serializeObject();
+
+        $.ajax({
+            type : 'put',
+            url : domainName + '/api-p/pof/',
+            contentType: "application/json; charset=utf-8",
+            data : JSON.stringify(formdata),
+            success : function(data) {
+                layer.msg("成功", {shift: -1, time: 1000}, function(){
+                    location.href = "taskList.html";
+                });
+            }
+        });
+    }
+
+</script>
+</body>
+</html>

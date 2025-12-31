@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cloud.exam.dao.QuestionErrorDao">
+
+
+    <delete id="delQuestionError" parameterType="list">
+        DELETE
+        FROM
+        question_error
+        WHERE
+        1=1
+        <if test="kpIds != null and kpIds.length >0 ">
+            AND kp_id in
+            <foreach collection="kpIds" index="index" item="kpId" open="(" separator="," close=")" >
+                ${kpId}
+            </foreach>
+        </if>
+    </delete>
+
+    <delete id="delExamEvalPerson" parameterType="list">
+        DELETE
+        FROM
+        exam_eval_person
+        WHERE
+        1 = 1
+        <if test="kpIds != null and kpIds.length >0 ">
+            AND kp_id in
+            <foreach collection="kpIds" index="index" item="kpId" open="(" separator="," close=")" >
+                ${kpId}
+            </foreach>
+        </if>
+    </delete>
+
+    <delete id="delExamEvalPersonHis" parameterType="list">
+        DELETE
+        FROM
+        exam_eval_person_his
+        WHERE
+        1 = 1
+        <if test="kpIds != null and kpIds.length >0 ">
+            AND kp_id in
+            <foreach collection="kpIds" index="index" item="kpId" open="(" separator="," close=")" >
+                ${kpId}
+            </foreach>
+        </if>
+    </delete>
+
+    <delete id="delExamEvalDept" parameterType="list">
+        DELETE
+        FROM
+        exam_eval_dept
+        WHERE
+        1 = 1
+        <if test="kpIds != null and kpIds.length >0 ">
+            AND kp_id in
+            <foreach collection="kpIds" index="index" item="kpId" open="(" separator="," close=")" >
+                ${kpId}
+            </foreach>
+        </if>
+    </delete>
+
+    <delete id="delExamEvalDeptHis" parameterType="list">
+        DELETE
+        FROM
+        exam_eval_dept_his
+        WHERE
+        1 = 1
+        <if test="kpIds != null and kpIds.length >0 ">
+            AND kp_id in
+            <foreach collection="kpIds" index="index" item="kpId" open="(" separator="," close=")" >
+                ${kpId}
+            </foreach>
+        </if>
+    </delete>
+
+    <delete id="delCourseKRel" parameterType="list">
+        DELETE
+        FROM
+        course_kp_rel
+        WHERE
+        1 = 1
+        <if test="kIds != null and kIds.length >0 ">
+            AND senses_id in
+            <foreach collection="kIds" index="index" item="kId" open="(" separator="," close=")" >
+                ${kId}
+            </foreach>
+        </if>
+    </delete>
+
+    <delete id="delCourseStudy" parameterType="list">
+        DELETE
+        FROM
+        course_study
+        WHERE
+        1 = 1
+        <if test="cIds != null and cIds.length >0 ">
+            AND id in
+            <foreach collection="cIds" index="index" item="cId" open="(" separator="," close=")" >
+                ${cId}
+            </foreach>
+        </if>
+    </delete>
+
+    <delete id="delCourseUserRel" parameterType="list">
+        DELETE
+        FROM
+        course_user_rel
+        WHERE
+        1 = 1
+        <if test="cIds != null and cIds.length >0 ">
+            AND course_id in
+            <foreach collection="cIds" index="index" item="cId" open="(" separator="," close=")" >
+                ${cId}
+            </foreach>
+        </if>
+    </delete>
+
+    <delete id="delCourseQuestionRel" parameterType="list">
+        DELETE
+        FROM
+        course_question_rel
+        WHERE
+        1 = 1
+        <if test="cIds != null and cIds.length >0 ">
+            AND course_id in
+            <foreach collection="cIds" index="index" item="cId" open="(" separator="," close=")" >
+                ${cId}
+            </foreach>
+        </if>
+    </delete>
+
+
+    <delete id="delCourseStudentAnswer" parameterType="list">
+        DELETE
+        FROM
+        course_student_answer
+        WHERE
+        1 = 1
+        <if test="cIds != null and cIds.length >0 ">
+            AND course_id in
+            <foreach collection="cIds" index="index" item="cId" open="(" separator="," close=")" >
+                ${cId}
+            </foreach>
+        </if>
+    </delete>
+
+
+
+
+
+
+
+
+    <select id="getCourseIds" parameterType="list" resultType="map">
+        SELECT ID
+        FROM
+        course_kp_rel
+        WHERE
+        1 = 1
+        <if test="kIds != null and kIds.length >0 ">
+            AND senses_id in
+            <foreach collection="kIds" index="index" item="kId" open="(" separator="," close=")" >
+                ${kId}
+            </foreach>
+        </if>
+    </select>
+</mapper>
+
+

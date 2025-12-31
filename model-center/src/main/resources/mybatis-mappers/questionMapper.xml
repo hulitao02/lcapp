@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.cloud.model.dao.QuestionDao">
+
+    <resultMap id="BaseQuestionMap" type="com.cloud.model.bean.dto.QuestionDto">
+        <id column="id" property="id" jdbcType="INTEGER"></id>
+        <result column="user_id" property="userId" jdbcType="INTEGER"></result>
+        <result column="kp_id" property="kpId" jdbcType="BIGINT"></result>
+        <result column="kn_id" property="knId" jdbcType="VARCHAR"></result>
+        <result column="model_kp_id" property="modelKpId" jdbcType="INTEGER"></result>
+        <result column="question_title" property="questionTitle" jdbcType="VARCHAR"></result>
+        <result column="content" property="content" jdbcType="VARCHAR"></result>
+        <result column="content_tag_json" property="contentTagJson" jdbcType="VARCHAR"></result>
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP"></result>
+        <result column="update_time" property="updateTime" jdbcType="TIMESTAMP"></result>
+        <result column="status" property="status" jdbcType="INTEGER"></result>
+        <result column="is_answer" property="isAnswer" jdbcType="INTEGER"></result>
+        <result column="type" property="type" jdbcType="INTEGER"></result>
+        <result column="reply_count" property="replyCount" jdbcType="INTEGER"></result>
+
+        <result column="kn_name" property="knName" jdbcType="VARCHAR"></result>
+        <result column="kp_name" property="kpName" jdbcType="VARCHAR"></result>
+
+    </resultMap>
+
+
+    <!--分页查询问题列表-->
+    <select id="getQuestionListPage" resultMap="BaseQuestionMap">
+        SELECT
+        ques_out.*,
+        ans_out.reply_count
+        FROM
+        question ques_out
+        join (
+        SELECT
+        ques.ID AS question_id,
+        COUNT ( ans.question_id ) AS reply_count
+        FROM
+        question ques
+        left join  answer ans ON ques.ID = ans.question_id
+        GROUP BY
+        ques.ID
+        ) ans_out ON ques_out.ID = ans_out.question_id
+        ${ew.customSqlSegment}
+    </select>
+
+    <!-- 胡 查询专家回答   -->
+    <select id="getAnswer" parameterType="map" resultType="map">
+        SELECT
+        *
+        FROM
+        answer
+        WHERE
+        1=1
+        <if test="userId!=null and userId!='' ">
+            AND user_id = #{userId}
+        </if>
+        AND question_id =#{questionId}
+        order by create_time desc
+        LIMIT 1
+    </select>
+
+    <select id="getQuestion" parameterType="list" resultType="map">
+        SELECT ID
+        FROM
+        question
+        WHERE
+        1 = 1
+        <if test="kIds != null and kIds.length >0 ">
+            AND kn_id in
+            <foreach collection="kIds" index="index" item="kId" open="(" separator="," close=")" >
+                ${kId}
+            </foreach>
+        </if>
+    </select>
+
+    <delete id="delQuestion" parameterType="list">
+        DELETE
+        FROM
+        question
+        WHERE
+        1 = 1
+        <if test="kIds != null and kIds.length >0 ">
+            AND kn_id in
+            <foreach collection="kIds" index="index" item="kId" open="(" separator="," close=")" >
+                ${kId}
+            </foreach>
+        </if>
+    </delete>
+
+
+    <delete id="delAnswer" parameterType="list">
+        DELETE
+        FROM
+        answer
+        WHERE
+        1 = 1
+        <if test="qIds != null and qIds.length >0 ">
+            AND question_id in
+            <foreach collection="qIds" index="index" item="qId" open="(" separator="," close=")" >
+                ${qId}
+            </foreach>
+        </if>
+
+    </delete>
+
+</mapper>

@@ -1,0 +1,213 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cloud.model.dao.ModelDataDao">
+
+    <!--    getAssemblyListByTemplate-->
+    <resultMap id="BaseModelDataMap" type="com.cloud.model.bean.vo.ModelDataVO">
+        <id column="id" jdbcType="VARCHAR" property="id"/>
+        <id column="model_kp_id" jdbcType="BIGINT" property="modelKpId"/>
+        <!--       知识点ID -->
+        <id column="kp_id" jdbcType="VARCHAR" property="kpId"/>
+        <!-- 挂接的数据部分字段-->
+        <id column="assembly_name" jdbcType="VARCHAR" property="assemblyName"/>
+        <id column="assembly_type" jdbcType="VARCHAR" property="assemblyType"/>
+        <id column="pro_id" jdbcType="INTEGER" property="proId"/>
+        <id column="pro_proname" jdbcType="VARCHAR" property="proProname"/>
+        <!--    属性分组-->
+        <id column="pro_type_name" jdbcType="VARCHAR" property="proTypeName"/>
+
+        <!--        模板名称，通过模板跳转到指定的模板信息-->
+        <id column="service_path" jdbcType="VARCHAR" property="servicePath"/>
+        <id column="model_name" jdbcType="VARCHAR" property="modelName"/>
+
+        <id column="ico_path" jdbcType="VARCHAR" property="picPath"/>
+
+        <id column="status" jdbcType="INTEGER" property="status"/>
+    </resultMap>
+
+    <sql id="Base_column">
+        id,model_kp_id,assembly_name,pro_id,pro_proname,status
+    </sql>
+
+
+    <!--    通过模板查询当前下，所有跟组件挂接的信息 , 如果传递组件参数，那么就只查询 组件下挂接的信息 -->
+    <select id="getAssemblyListByTemplate" parameterType="com.cloud.model.model.ModelData" resultMap="BaseModelDataMap">
+        select
+        md.id as id , md.model_kp_id as model_kp_id ,mk.kp_id as kp_id
+        , assembly_name,assembly_type,md.constraint_force as constraint_force,md.sql_str as sql_str
+        from
+        model_data md
+        join
+        model_kp mk
+        -- 模板和知识点的关联ID
+        on
+        md.model_kp_id = mk.id
+        WHERE
+        mk.status <![CDATA[<>]]> 0
+        <if test="modelKpId != null">
+            AND model_kp_id = #{modelKpId}
+        </if>
+        <if test="assemblyName != null">
+            AND assembly_name = #{assemblyName}
+        </if>
+    </select>
+
+
+    <!--    通过模板查询当前下，所有跟组件挂接的信息 , 如果传递组件参数，那么就只查询 组件下挂接的信息 -->
+    <select id="getModelKpIdListBykpId" parameterType="com.cloud.model.model.ModelData" resultMap="BaseModelDataMap">
+        SELECT
+        *
+        FROM
+        (
+        SELECT DISTINCT
+        md.model_kp_id AS model_kp_id,
+        mk.kp_id AS kp_id,
+        pm.service_path,
+        mk."name" AS model_name,
+        md.status,
+        mk.ico_path AS ico_path,
+        mk.sort
+        FROM
+        model_data md
+        JOIN model_kp mk ON md.model_kp_id = mk.
+        ID JOIN page_model pm ON mk.model_id = pm.ID
+        WHERE
+        1 = 1
+        <if test="modelKpId != null">
+            AND model_kp_id = #{modelKpId}
+        </if>
+        <if test="kpId != null">
+            AND mk.kp_id = #{kpId}
+        </if>
+        <if test="status != null">
+            AND mk.status = #{status}
+        </if>
+        ) A
+        ORDER BY
+        A.sort
+
+    </select>
+
+    <select id="getModelDataByParam" parameterType="map" resultType="map">
+        SELECT
+        DISTINCT model_kp_id
+        FROM
+        model_data
+        WHERE
+        kp_id = #{kpId}
+        <if test="proName != null">
+            AND pro_proname = #{proName}
+        </if>
+        AND pro_type_name = #{proTypeName}
+    </select>
+
+
+    <!-- 胡 新增-->
+    <select id="getAssemblyName" parameterType="map" resultType="map">
+        SELECT
+        max(id) as id,
+        assembly_name
+        FROM
+        model_data
+        WHERE
+        model_kp_id = #{modelKpId}
+        <if test="constraintForce != null">
+            AND constraint_force = #{constraintForce}
+        </if>
+        GROUP BY
+        assembly_name,
+        sql_str
+    </select>
+
+    <!-- 胡 新增-->
+    <select id="getProInfoList" parameterType="map" resultType="map">
+        SELECT DATA
+        .ID,
+        DATA.assembly_name,
+        DATA.pro_id as pro_code,
+        DATA.assembly_type,
+        DATA.pro_type_name as pro_type_code,
+        DATA.kp_id as kp_code,
+        DATA.sql_str,
+        DATA.constraint_force
+        FROM
+        model_data DATA
+        WHERE
+        1 = 1
+        AND assembly_name = #{assemblyName}
+        AND model_kp_id = #{modelKpId}
+    </select>
+
+    <!-- 删除属性-->
+    <delete id="delInfoByProCode" parameterType="string">
+        DELETE
+        FROM
+        model_data
+        WHERE
+        1 = 1
+        AND pro_proname = #{proCode}
+    </delete>
+
+    <!-- 删除属性分组-->
+    <delete id="delInfoByProTypeCode" parameterType="string">
+        DELETE
+        FROM
+        model_data
+        WHERE
+        1 = 1
+        AND pro_type_name = #{proTypeCode}
+    </delete>
+
+
+    <delete id="delInfoByProCodeAndKpId" parameterType="map">
+        DELETE
+        FROM
+        model_data
+        WHERE
+        1 = 1
+        <if test="proCode != null">
+            AND pro_proname = #{proCode}
+        </if>
+        <if test="kpId != null">
+            AND kp_id=#{kpId}
+        </if>
+        <if test="proTypeCode != null">
+            AND pro_type_name = #{proTypeCode}
+        </if>
+    </delete>
+
+    <select id="getRelationByProTypecode" parameterType="map" resultType="map">
+        SELECT
+        kp_id,
+        model_kp_id
+        FROM
+        model_data
+        WHERE
+        1 = 1
+        AND pro_type_name = #{proTypeCode}
+        GROUP BY
+        kp_id,
+        model_kp_id
+    </select>
+
+
+    <!-- 查询知识关系数据的属性信息-->
+    <select id="getRelationKnowledgeAssemblyList" parameterType="map" resultType="map">
+        SELECT
+        knowledge.* ,
+        pro.pro_proname,
+        pro.pro_type_name
+        FROM
+        relation_knowledge_data AS knowledge,
+        model_data AS DATA,
+        knowledge_pro AS pro
+        WHERE
+        1 = 1
+        AND DATA.model_kp_id = #{modelKpId}
+        AND DATA.ID = knowledge.model_data_id
+        AND pro.pro_code = knowledge.pro_code
+        AND pro.kp_code = knowledge.kp_code
+    </select>
+
+</mapper>

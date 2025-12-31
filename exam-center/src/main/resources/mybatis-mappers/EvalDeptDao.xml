@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cloud.exam.dao.EvalDeptDao">
+
+    <!--单次考试：各部门综合能力-->
+    <select id="getExamDeptEval" parameterType="map" resultType="map">
+        SELECT
+        *
+        FROM
+        exam_eval_dept
+        WHERE
+        1 = 1
+        AND kp_id = 0
+        AND ac_id = #{acId}
+    </select>
+
+    <!-- 查询 A活动 下 A部门下的所有知识点-->
+    <select id="getKpIdsForDept" parameterType="map" resultType="map">
+        SELECT DISTINCT
+        kp_id ,department_id
+        FROM
+        exam_eval_dept
+        WHERE
+        1 = 1
+        and kp_id != 0
+        AND ac_id = #{acId}
+        and department_id=#{deptId}
+    </select>
+
+
+    <!--单次 查询部门各知识点能力-->
+    <select id="getExamDeptDetail" parameterType="map" resultType="map">
+        SELECT
+        *
+        FROM
+        exam_eval_dept
+        WHERE
+        1 = 1
+        AND kp_id != 0
+        AND ac_id = #{acId}
+        AND department_id = #{deptId}
+    </select>
+
+    <!-- 本次活动 各部门 综合能力值-->
+    <select id="getExamDeptScore" parameterType="map" resultType="map">
+        SELECT
+        round( AVG ( eval_score ), 0 ) AS AVG,
+        department_id
+        FROM
+        exam_eval_dept
+        WHERE
+        1 = 1
+        AND ac_id = #{acId}
+        GROUP BY
+        department_id
+    </select>
+
+
+
+
+
+</mapper>
+
+

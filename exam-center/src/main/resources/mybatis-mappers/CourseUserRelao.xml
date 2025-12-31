@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cloud.exam.dao.CourseUserRelDao">
+
+    <!--查询学生一周的课程列表-->
+    <select id="getPerMonthCountByUser" resultType="java.util.HashMap">
+        select to_number(to_char( cs.start_time, 'MM' ),'99') AS date,count(DISTINCT cs.id)
+        from course_study cs INNER JOIN course_user_rel cur
+        on cs.id = cur.course_id
+        where to_char( cs.start_time, 'yyyy' ) = #{paramsDate}
+        and cs.status = 3 and cur.user_id = #{userId}
+        GROUP BY to_char( cs.start_time, 'MM' )
+    </select>
+
+    <!-- 课后作业错题收录-->
+    <select id="errorList" parameterType="map" resultType="map">
+        SELECT
+        answer.question_id,
+        answer.actual_score,
+        answer.student_id,
+        rel.score,
+        q.question,
+        q.TYPE
+        FROM
+        course_student_answer AS answer,
+        course_question_rel AS rel,
+        question AS q
+        WHERE
+        1 = 1
+        AND answer.course_id = #{courseId}
+        AND answer.student_id = #{studentId}
+        AND answer.course_id = rel.course_id
+        AND answer.question_id = rel.question_id
+        AND q.ID = answer.question_id
+        AND answer.actual_score &lt; rel.score
+    </select>
+
+
+</mapper>
+
+

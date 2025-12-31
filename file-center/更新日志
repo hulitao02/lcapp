@@ -1,0 +1,3 @@
+7——26号
+    1. 上传影像接口 tif文件服务器的绝对路径 提出到Nacso中  tiffastPath
+    2. nacos中file配置文件 增加配置 tiffastPath:

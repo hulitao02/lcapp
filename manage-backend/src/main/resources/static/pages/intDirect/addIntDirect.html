@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en-us" id="extr-page">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" type="text/css" media="screen" href="../../css/bootstrap.min.css">
+</head>
+<body>
+<div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+    <form class="form-horizontal" onsubmit="return false" id="form">
+        <fieldset>
+            <div class="form-group">
+                <label class="col-md-2 control-label">情报方向名称</label>
+                <div class="col-md-10">
+                    <input class="form-control" placeholder="情报方向名称" type="text" name="name" id="name" maxlength="320"
+                           data-bv-notempty="true"
+                           data-bv-notempty-message="情报方向名称 不能为空">
+                </div>
+            </div>
+            <div class="form-group">
+
+                <label class="col-md-2 control-label" multiple="multiple" size="2">国家</label>
+
+                <div class="col-md-10" style="position:relative;" >
+                    <input type="text" id="country" class="country" placeholder="请选择国家" name="country" style="position:absolute;width:380px;height:25px;"
+                           data-bv-notempty="true" style="border-width: 0px"
+                           data-bv-notempty-message="国家 不能为空">
+                    <select id="countrySelect" style="width:400px;height:25px;" name="countrySelect" class="form-control input-sm" onchange="pushInput()"></select>
+                </div>
+
+            </div>
+            <div class="form-group">
+                <label class="col-md-2 control-label">描述</label>
+                <div class="col-md-10">
+                    <input class="form-control" placeholder="描述" type="text" name="describe" id="describe" maxlength="10240">
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <div class="row" align="center">
+                    <div class="col-md-12">
+                        <button class="btn btn-primary" onclick="location.href='intDirectList.html'">返回</button>
+                        <button class="btn btn-primary" type="submit" onclick="add()">
+                            <i class="fa fa-save"></i> 保存
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </fieldset>
+    </form>
+</div>
+
+<script src="../../js/constant.js"></script>
+<script type="text/javascript" src="../../js/libs/jquery-3.3.1.min.js"></script>
+<script type="text/javascript" src="../../js/jq.js"></script>
+<script type="text/javascript" src="../../js/plugin/bootstrapvalidator/bootstrapValidator.min.js"></script>
+<script type="text/javascript" src="../../js/common.js"></script>
+<script type="text/javascript" src="../../layui/layui.js"></script>
+<script type="text/javascript" src="../../js/my/ztree-menu.js"></script>
+<script type="text/javascript">
+
+    function pushInput(){
+        var select = document.getElementById("countrySelect");
+        var str = [];
+        for(i=0;i<select.length;i++){
+
+            if(select.options[i].selected){
+                var p =  $('#country').val();
+                // str.push(select[i].value);
+                var h = select[i].value
+                if(p == null || p==""){
+                    $(".country").val(h);
+                }else{
+                    $(".country").val(p+","+h);
+                }
+            }
+        }
+    }
+
+    layui.use('layer', function(){
+        var layer = layui.layer;
+    });
+
+    initCountrySelect();
+
+    function add() {
+        $('#form').bootstrapValidator();
+        var bootstrapValidator = $("#form").data('bootstrapValidator');
+        bootstrapValidator.validate();
+        if(!bootstrapValidator.isValid()){
+            return;
+        }
+
+        var formdata = $("#form").serializeObject();
+
+        $.ajax({
+            type : 'post',
+            url : domainName + '/api-b/intDirect',
+            contentType: "application/json; charset=utf-8",
+            data : JSON.stringify(formdata),
+            success : function(data) {
+                layer.msg("成功", {shift: -1, time: 1000}, function(){
+                    location.href = "intDirectList.html";
+                });
+            }
+        });
+    }
+
+</script>
+</body>
+</html>

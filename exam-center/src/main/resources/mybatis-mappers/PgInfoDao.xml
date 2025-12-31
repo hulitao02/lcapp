@@ -1,0 +1,303 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cloud.exam.dao.PgInfoDao">
+
+    <select id="baseInfo" parameterType="map" resultType="map">
+        SELECT
+        answer.student_id,answer.pd_type,kp.kp_id
+        FROM
+        student_answer as answer ,question_kp_rel as kp
+        WHERE
+        1 = 1
+        AND ac_id = #{examId}
+        and answer.question_id=kp.question_id
+        and answer.pd_type is not null
+        group by answer.student_id,answer.pd_type,kp.kp_id
+    </select>
+
+    <select id="getA" parameterType="map" resultType="map">
+        SELECT
+        sum(case when answer.actual_score>0 then 1 else 0 end) ::numeric(5,2),
+        count(1),
+        round((sum(case when answer.actual_score>0 then 1 else 0 end) ::numeric(5,2))/(count(1)),2) as result
+        FROM
+        student_answer as answer ,question_kp_rel as kp,
+        paper_manage_rel as paper
+        WHERE
+        1 = 1
+        AND ac_id = #{examId}
+        and answer.question_id=kp.question_id
+        and paper.paper_id=answer.paper_id
+        and paper.question_id=answer.question_id
+        and answer.student_id=#{studentId}
+        and answer.pd_type=#{pdType}
+        and kp.kp_id=#{kpId}
+    </select>
+
+
+    <select id="getB" parameterType="map" resultType="map">
+        SELECT
+        sum(answer.actual_score),sum(paper.score) as total_score,
+        round((sum(answer.actual_score))/(sum(paper.score)),2) as result
+        FROM
+        student_answer as answer ,question_kp_rel as kp,
+        paper_manage_rel as paper
+        WHERE
+        1 = 1
+        AND ac_id = #{examId}
+        and answer.question_id=kp.question_id
+        and paper.paper_id=answer.paper_id
+        and paper.question_id=answer.question_id
+        and answer.student_id=#{studentId}
+        and answer.pd_type=#{pdType}
+        and kp.kp_id=#{kpId}
+    </select>
+
+    <select id="ability" parameterType="map" resultType="map">
+        select
+        kp_id,
+        max(kp_name) as kp_name,
+        student_id,
+        max(student_name) as student_name,
+        count(1),
+        sum(total_question) as total_question,
+        sum(CAST(result as NUMERIC(10,2))),
+        round(sum(CAST(result as NUMERIC(10,2)))/count(1),2) as score
+        from pg_info
+        where 1=1
+        <if test="startTime !=null">
+            and create_time &gt;= #{startTime}::timestamp
+        </if>
+        <if test="endTime !=null">
+            and create_time &lt;= #{endTime}::timestamp
+        </if>
+        <if test="kpIds != null and kpIds.size() > 0">
+            and kp_id in
+            <foreach collection="kpIds" item="kp" index="index" open="(" close=")" separator=",">
+                #{kp}
+            </foreach>
+        </if>
+        <if test="pdTypes != null and pdTypes.size() > 0">
+            and pd_type in
+            <foreach collection="pdTypes" item="kp" index="index" open="(" close=")" separator=",">
+                ${kp}
+            </foreach>
+        </if>
+        <if test="studentIds != null and studentIds.size() > 0">
+            and student_id in
+            <foreach collection="studentIds" item="kp" index="index" open="(" close=")" separator=",">
+                ${kp}
+            </foreach>
+        </if>
+        group by kp_id,student_id
+        order by score desc
+    </select>
+
+    <select id="khNum" parameterType="map" resultType="map">
+        select distinct exam_id from pg_info
+        where 1=1
+        and create_time &gt;= #{startTime}::timestamp
+        and create_time &lt;= #{endTime}::timestamp
+        <if test="pdTypes != null and pdTypes.size() > 0">
+            and pd_type in
+            <foreach collection="pdTypes" item="kp" index="index" open="(" close=")" separator=",">
+                ${kp}
+            </foreach>
+        </if>
+        and student_id=#{studentId}
+        and kp_id=#{kpId}
+    </select>
+
+    <select id="history" parameterType="map" resultType="map">
+        select
+        kp_id,
+        max(create_time) as create_time,
+        max(kp_name) as kp_name,
+        count(1),
+        sum(CAST(result as NUMERIC(10,2))),
+        round(sum(CAST(result as NUMERIC(10,2)))/count(1),2) as score
+        from pg_info
+        where 1=1
+        and create_time &gt;= #{startTime}::timestamp
+        and create_time &lt;= #{endTime}::timestamp
+        <if test="kpIds != null and kpIds.size() > 0">
+            and kp_id in
+            <foreach collection="kpIds" item="kp" index="index" open="(" close=")" separator=",">
+                #{kp}
+            </foreach>
+        </if>
+        <if test="pdTypes != null and pdTypes.size() > 0">
+            and pd_type in
+            <foreach collection="pdTypes" item="kp" index="index" open="(" close=")" separator=",">
+                ${kp}
+            </foreach>
+        </if>
+        and student_id=#{studentId}
+        group by kp_id,create_time
+    </select>
+
+    <select id="deptUser" parameterType="map" resultType="map">
+        select DISTINCT student_id from pg_info
+        where 1=1
+        and dept_id=#{deptId}
+        and create_time &gt;= #{startTime}::timestamp
+        and create_time &lt;= #{endTime}::timestamp
+        <if test="kpIds != null and kpIds.size() > 0">
+            and kp_id in
+            <foreach collection="kpIds" item="kp" index="index" open="(" close=")" separator=",">
+                #{kp}
+            </foreach>
+        </if>
+        <if test="pdTypes != null and pdTypes.size() > 0">
+            and pd_type in
+            <foreach collection="pdTypes" item="kp" index="index" open="(" close=")" separator=",">
+                ${kp}
+            </foreach>
+        </if>
+    </select>
+
+    <select id="getKpId" parameterType="map" resultType="map">
+        SELECT ID,
+        student_id,
+        dept_id,
+        kp_id,
+        kp_name,
+        pd_type,
+        exam_id,
+        create_time,
+        dept_name,
+        student_name,
+        right_question,
+        total_question,
+        right_score,
+        total_score,
+        question_result,
+        score_result,
+        RESULT
+        FROM
+        pg_info
+        WHERE
+        student_id = #{studentId}
+        and create_time &gt;= #{startTime}::timestamp
+        and create_time &lt;= #{endTime}::timestamp
+        <if test="pdTypes != null and pdTypes.size() > 0">
+            and pd_type in
+            <foreach collection="pdTypes" item="kp" index="index" open="(" close=")" separator=",">
+                ${kp}
+            </foreach>
+        </if>
+        ORDER BY
+        create_time DESC
+        LIMIT 1
+    </select>
+
+    <select id="kpScore" parameterType="map" resultType="map">
+        SELECT
+        kp_id,
+        MAX ( kp_name ) AS kp_name,
+        COUNT ( 1 ),
+        SUM ( CAST ( RESULT AS NUMERIC ( 10, 2 ) ) ),
+        round( SUM ( CAST ( RESULT AS NUMERIC ( 10, 2 ) ) ) / COUNT ( 1 ), 2 ) AS score
+        FROM
+        pg_info
+        WHERE
+        1 = 1
+        and create_time &gt;= #{startTime}::timestamp
+        and create_time &lt;= #{endTime}::timestamp
+        <if test="kpIds != null and kpIds.size() > 0">
+            and kp_id in
+            <foreach collection="kpIds" item="kp" index="index" open="(" close=")" separator=",">
+                #{kp}
+            </foreach>
+        </if>
+        <if test="pdTypes != null and pdTypes.size() > 0">
+            and pd_type in
+            <foreach collection="pdTypes" item="kp" index="index" open="(" close=")" separator=",">
+                ${kp}
+            </foreach>
+        </if>
+        <if test="studentIds != null and studentIds.size() > 0">
+            and student_id in
+            <foreach collection="studentIds" item="kp" index="index" open="(" close=")" separator=",">
+                ${kp}
+            </foreach>
+        </if>
+        GROUP BY
+        kp_id
+    </select>
+
+
+    <select id="deptAbility" parameterType="map" resultType="map">
+        SELECT
+        kp_id,
+        MAX ( kp_name ) AS kp_name,
+        student_id,
+        max(student_name)as student_name,
+        COUNT ( 1 ),
+        SUM ( CAST ( RESULT AS NUMERIC ( 10, 2 ) ) ),
+        round( SUM ( CAST ( RESULT AS NUMERIC ( 10, 2 ) ) ) / COUNT ( 1 ), 2 ) AS score
+        FROM
+        pg_info
+        WHERE
+        1 = 1
+        and create_time &gt;= #{startTime}::timestamp
+        and create_time &lt;= #{endTime}::timestamp
+        AND kp_id =#{kpId}
+        <if test="pdTypes != null and pdTypes.size() > 0">
+            and pd_type in
+            <foreach collection="pdTypes" item="kp" index="index" open="(" close=")" separator=",">
+                ${kp}
+            </foreach>
+        </if>
+        <if test="depts != null and depts.size() > 0">
+            and dept_id in
+            <foreach collection="depts" item="kp" index="index" open="(" close=")" separator=",">
+                ${kp}
+            </foreach>
+        </if>
+        GROUP BY
+        kp_id,student_id
+        order by score desc
+        limit 1 OFFSET #{index}
+    </select>
+
+    <select id="distribution" parameterType="map" resultType="map">
+        SELECT
+        student_id,
+        max(student_name)as student_name,
+        COUNT ( 1 ),
+        SUM ( CAST ( RESULT AS NUMERIC ( 10, 2 ) ) ),
+        round( SUM ( CAST ( RESULT AS NUMERIC ( 10, 2 ) ) ) / COUNT ( 1 ), 2 ) AS score
+        FROM
+        pg_info
+        WHERE
+        1 = 1
+        and create_time &gt;= #{startTime}::timestamp
+        and create_time &lt;= #{endTime}::timestamp
+        <if test="pdTypes != null and pdTypes.size() > 0">
+            and pd_type in
+            <foreach collection="pdTypes" item="kp" index="index" open="(" close=")" separator=",">
+                ${kp}
+            </foreach>
+        </if>
+        <if test="depts != null and depts.size() > 0">
+            and dept_id in
+            <foreach collection="depts" item="kp" index="index" open="(" close=")" separator=",">
+                ${kp}
+            </foreach>
+        </if>
+        <if test="kpIds != null and kpIds.size() > 0">
+            and kp_id in
+            <foreach collection="kpIds" item="kp" index="index" open="(" close=")" separator=",">
+                #{kp}
+            </foreach>
+        </if>
+        GROUP BY
+        student_id
+        order by score desc
+    </select>
+
+</mapper>
+
+

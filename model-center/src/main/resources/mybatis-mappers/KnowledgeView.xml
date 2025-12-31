@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cloud.model.dao.KnowledgeViewDao">
+
+
+    <!--胡 根据用户id，知识id查询浏览信息-->
+    <select id="getKnowledgeView" resultType="map">
+        SELECT
+        *
+        FROM
+        knowledge_view
+        WHERE
+        user_id = #{userId}
+        <if test="sensesId!=null and sensesId!='' ">
+            AND senses_id =#{sensesId}
+        </if>
+    </select>
+
+    <!--查询已学知识的数量-->
+    <select id="getStudyKnowledgeCount" resultType="map">
+        SELECT
+        senses_id
+        FROM
+        knowledge_view
+        WHERE
+        1 = 1
+        GROUP BY
+        senses_id
+    </select>
+
+
+    <!--    知识学习统计-->
+    <select id="statisticsStudyCount" resultType="java.util.HashMap" parameterType="map">
+        SELECT
+             to_char( ck.create_time, 'yyyy-MM' ) AS date,
+             count (*)
+        FROM
+         knowledge_view ck
+        <where>
+            <if test="userId != null">
+                and ck.user_id = #{userId}
+            </if>
+            <if test="paramsDate != null">
+                -- 查询参数，年份
+                AND to_char( ck.create_time, 'yyyy' ) = #{paramsDate}
+            </if>
+        </where>
+        GROUP BY
+        -- 按照月份分组，
+        to_char( ck.create_time, 'yyyy-MM' )
+    </select>
+
+
+    <!--统计用户top10 知识学习-->
+    <select id="getUserStudyCountGroupbyUId" parameterType="map" resultType="map">
+        SELECT
+            user_id as userId,
+            COUNT ( 1 ) as count
+        FROM
+            knowledge_view ck
+        <where>
+            <if test="paramsDate != null and paramsDate != ''">
+                -- 查询参数，年份
+                to_char( ck.create_time, 'yyyy' ) = #{paramsDate}
+            </if>
+        </where>
+        GROUP BY
+            user_id
+        ORDER BY
+            count DESC
+        LIMIT 10
+    </select>
+
+
+
+    <!-- 统计 有多少人学习了某个知识点 。-->
+    <select id="getUserCountByKn" parameterType="map" resultType="map">
+        SELECT
+            senses_name ,
+            COUNT ( 1 ) as count
+        FROM
+        knowledge_view ck
+        <where>
+            <if test="paramsDate != null and paramsDate != ''">
+                -- 查询参数，年份
+                to_char( ck.create_time, 'yyyy' ) = #{paramsDate}
+            </if>
+        </where>
+        GROUP BY
+            senses_name
+        ORDER BY
+            count DESC
+        LIMIT 10
+    </select>
+
+    <delete id="delKnowledgeView" parameterType="list">
+        DELETE
+        FROM
+        knowledge_view
+        WHERE
+        1 = 1
+        <if test="kIds != null and kIds.length >0 ">
+            AND senses_id in
+            <foreach collection="kIds" index="index" item="kId" open="(" separator="," close=")" >
+                ${kId}
+            </foreach>
+        </if>
+    </delete>
+
+
+    <select id="getKnowledgeList" parameterType="map" resultType="map">
+        SELECT
+        senses_id
+        FROM
+        knowledge_view
+        WHERE
+        1 = 1
+        AND user_id =#{userId}
+        AND study_date &gt; #{startTime}
+        AND study_date &lt; #{endTime}
+
+    </select>
+
+
+
+
+</mapper>

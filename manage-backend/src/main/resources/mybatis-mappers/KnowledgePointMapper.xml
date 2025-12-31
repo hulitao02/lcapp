@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cloud.backend.dao.KnowledgePointsDao">
+
+    <sql id="where">
+        <where>
+            <if test="pointName != null and pointName != ''">
+                <bind name="pointName" value="'%' + pointName + '%'"/>
+                and t.pointName = #{pointName}
+            </if>
+
+        </where>
+    </sql>
+    <select id="count" resultType="int">
+        select count(*) from knowledge_points t
+        <include refid="where"/>
+    </select>
+
+    <select id="findData" resultType="com.cloud.model.common.KnowledgePoints">
+        select * from knowledge_points t
+        <include refid="where"/>
+        order by t.id desc
+        <if test="start != null and start >= 0 and length != null and length > 0">
+            limit #{length} OFFSET #{start}
+        </if>
+    </select>
+
+    <select id="getClass" parameterType="long" resultType="map">
+        WITH RECURSIVE dict AS ( SELECT * FROM knowledge_points WHERE parentid = #{parentId} UNION ALL SELECT knowledge_points.* FROM knowledge_points, dict WHERE knowledge_points.parentid = dict.ID )
+        SELECT ID,
+        pointname,
+        parentid
+        FROM
+        dict
+    </select>
+
+    <select id="getClassDM" parameterType="long" resultType="map">
+        SELECT * FROM knowledge_points kp START WITH  parentid = #{parentId} CONNECT BY PRIOR  id = parentid;
+    </select>
+
+
+    <select id="getClassById" parameterType="long" resultType="map">
+        WITH RECURSIVE dict AS ( SELECT * FROM knowledge_points WHERE id = #{id} UNION ALL SELECT knowledge_points.* FROM knowledge_points, dict WHERE knowledge_points.parentid = dict.ID )
+        SELECT ID,
+        pointname,
+        parentid
+        FROM
+        dict
+    </select>
+
+    <select id="getClassByIdDM" parameterType="long" resultType="map">
+        SELECT * FROM knowledge_points kp START WITH  id = #{id} CONNECT BY PRIOR  id = parentid;
+    </select>
+
+    <select id="getKnowledgePointsByCode" parameterType="string" resultType="map">
+        SELECT
+        *
+        FROM
+        knowledge_points
+        WHERE
+        1 = 1
+        AND code = #{code}
+    </select>
+
+
+    <!-- 获取绑定数据的知识点树形菜单-->
+    <select id="getKnowledgeBindDM" parameterType="list" resultType="map">
+        SELECT distinct id,parentId,pointname FROM knowledge_points kp START WITH  id in
+        <foreach collection="idsList" item="id" index="index" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+        CONNECT BY   id = PRIOR parentid;
+    </select>
+
+    <select id="getKnowledgeBind" parameterType="list" resultType="map">
+        WITH RECURSIVE r AS (
+        SELECT
+        *
+        FROM
+        knowledge_points
+        WHERE
+        ID IN
+        <foreach collection="idsList" item="id" index="index" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+        UNION ALL
+        SELECT T
+        .*
+        FROM
+        knowledge_points T,
+        r
+        WHERE
+        T.ID = r.parentid
+        ) SELECT DISTINCT ID
+        ,
+        pointname,
+        parentid
+        FROM
+        r
+        ORDER BY
+        parentid
+    </select>
+
+
+
+
+
+
+    <select id="getUpdateInfo" resultType="map">
+        SELECT
+        *
+        FROM
+        knowledge_points
+        WHERE
+        1 = 1
+        AND parent_code != '0'
+        AND parentid =0
+    </select>
+
+    <delete id="delKnowledgePointManage" parameterType="list">
+        DELETE
+        FROM
+        knowledge_points
+        WHERE
+        1 = 1
+        <if test="kpIds != null and kpIds.length >0 ">
+            AND ID in
+            <foreach collection="kpIds" index="index" item="kpId" open="(" separator="," close=")" >
+                ${kpId}
+            </foreach>
+        </if>
+    </delete>
+
+    <!-- 根据知识点查询该知识点的下一级知识点信息-->
+    <select id="getNextPoint" parameterType="map" resultType="map">
+        SELECT
+        *
+        FROM
+        knowledge_points
+        WHERE
+        parentid =#{pointId}
+        <if test="pointName != null and pointName !=''">
+            and pointname like #{pointName}
+        </if>
+    </select>
+
+
+    <!-- 根据知识点名称模糊查询知识点列表-->
+    <select id="getPointListForName" parameterType="map" resultType="map">
+        SELECT
+        *
+        FROM
+        knowledge_points
+        WHERE
+        pointname like #{pointName}
+    </select>
+</mapper>

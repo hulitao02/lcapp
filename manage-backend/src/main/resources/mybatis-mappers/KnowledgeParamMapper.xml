@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cloud.backend.dao.KnowledgeParamDao">
+
+	<select id="getParamValue" parameterType="com.cloud.backend.model.KnowledgeParam" resultType="string">
+		SELECT
+		param_value
+		FROM
+		knowledge_param
+		WHERE
+		1 = 1
+		AND param_name = #{paramName};
+	</select>
+</mapper>

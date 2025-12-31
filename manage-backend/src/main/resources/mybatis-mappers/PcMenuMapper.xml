@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cloud.backend.dao.PcMenuDao">
+
+	<!-- 添加产品菜单-->
+	<insert id="saveInfo" parameterType="com.cloud.backend.model.PcMenu">
+		INSERT INTO pc_menu ( menu_name, url, LEVEL, parent_id, menu_id, sort,icon, create_time )
+		VALUES
+		( #{menuName}, #{url}, #{level}, #{parentId}, #{menuId}, #{sort},#{icon}, #{createTime} )
+	</insert>
+
+	<!--更新产品菜单-->
+	<update id="updateInfo" parameterType="com.cloud.backend.model.PcMenu">
+		UPDATE pc_menu
+		SET menu_id = #{menuId},
+		menu_name = #{menuName},
+		url = #{url},
+		LEVEL = #{level},
+		parent_id = #{parentId},
+		sort = #{sort},
+		icon = #{icon},
+		update_time = #{updateTime}
+		WHERE
+		ID = #{id}
+	</update>
+
+	<!--根据id删除产品菜单-->
+	<delete id="delInfo" parameterType="com.cloud.backend.model.PcMenu">
+		DELETE
+		FROM
+		pc_menu
+		WHERE
+		ID = #{id}
+	</delete>
+
+	<!--查询产品菜单列表-->
+	<select id="getInfoList" resultType="map">
+		SELECT
+		menu_name AS menuName,
+		pc_menu.ID,
+		m.url,
+		coalesce(icon,'-1') AS icon,
+		parent_id AS parentId
+		FROM
+		pc_menu inner join menu as m on menu_id=m.id
+		WHERE
+		1 = 1
+		ORDER BY
+		pc_menu.sort
+	</select>
+
+
+	<!--根据id查询产品菜单详细信息-->
+	<select id="getInfoDetail" parameterType="com.cloud.backend.model.PcMenu" resultType="com.cloud.backend.model.PcMenu">
+		SELECT
+		*
+		FROM
+		pc_menu
+		WHERE
+		id=#{id}
+	</select>
+
+	<!-- 迭代查询根节点及所有子节点的数据 -->
+	<select id="getMenuList" parameterType="com.cloud.backend.model.PcMenu" resultType="map">
+		with recursive a as (
+		    select id,
+					parent_id,
+					menu_name
+			 FROM
+				 pc_menu where id =#{id}
+			 union all
+			 select d.id,
+					d.parent_id,
+					d.menu_name from pc_menu d join a on a.id=d.parent_id)
+		select id,
+			   parent_id,
+			   menu_name
+		FROM a;
+	</select>
+
+	<!--删除菜单信息-->
+	<delete id="delMenus" parameterType="map">
+		DELETE
+		FROM
+		pc_menu
+		WHERE
+		1 = 1
+		<if test="ids != null and ids.length >0 ">
+			AND id in
+			<foreach collection="ids" index="index" item="id" open="(" separator="," close=")" >
+				${id}
+			</foreach>
+		</if>
+	</delete>
+
+
+</mapper>

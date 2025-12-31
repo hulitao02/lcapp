@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en-us" id="extr-page">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" type="text/css" media="screen" href="../../css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" media="screen" href="../../css/dataTables.bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" media="screen" href="../../css/bootstrap.min.css">
+</head>
+<body>
+<div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+    <form class="form-horizontal" onsubmit="return false" id="form">
+        <fieldset>
+            <div class="form-group">
+                <label class="col-md-2 control-label">策略名称</label>
+                <div class="col-md-10">
+                    <input class="form-control" placeholder="策略名称" type="text" name="name" id="name" maxlength="320"
+                           data-bv-notempty="true"
+                           data-bv-notempty-message="策略名称 不能为空">
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-md-2 control-label">策略类型</label>
+                <div class="col-md-10">
+                    <select class="form-control input-sm" id="nameclass" name="nameclass">
+                    </select>
+                </div>
+
+            </div>
+
+<!--            <div class="form-group">-->
+<!--                <label class="col-md-2 control-label">策略内容</label>-->
+<!--                <div class="col-md-10">-->
+<!--                    <input class="form-control" placeholder="策略内容" type="text" name="content" id="content" maxlength="320"-->
+<!--                           data-bv-notempty="true"-->
+<!--                           data-bv-notempty-message="策略内容 不能为空">-->
+<!--                </div>-->
+<!--            </div>-->
+            <div id = "strategyContent">
+
+            </div>
+            <div class="form-actions">
+                <div class="row" align="center">
+                    <div class="col-md-12">
+                        <button class="btn btn-primary" onclick="location.href='strategyList.html'">返回</button>
+                        <button class="btn btn-primary" type="submit" onclick="add()">
+                            <i class="fa fa-save"></i> 保存
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </fieldset>
+    </form>
+</div>
+
+<script src="../../js/constant.js"></script>
+<script type="text/javascript" src="../../js/libs/jquery-3.3.1.min.js"></script>
+<script type="text/javascript" src="../../js/jq.js"></script>
+<script type="text/javascript" src="../../js/plugin/datatables/jquery.dataTables.min.js"></script>
+<script type="text/javascript" src="../../js/plugin/datatables/dataTables.bootstrap.min.js"></script>
+<script type="text/javascript" src="../../js/plugin/bootstrapvalidator/bootstrapValidator.min.js"></script>
+<script type="text/javascript" src="../../js/common.js"></script>
+<script type="text/javascript" src="../../layui/layui.js"></script>
+<script type="text/javascript">
+    var timeStrategy = {};
+    var laydate;
+    layui.use(['layer','util', 'laydate'], function(){
+        var layer = layui.layer;
+        var util = layui.util;
+        laydate = layui.laydate;
+        $.ajax({
+            type : 'get',
+            url : domainName + '/api-b/findDict?dictType='+encodeURIComponent("策略类型"),
+            async:false,
+            success : function(data) {
+                timeStrategy = data;
+                $.each(data, function(key, value){
+                    var option = $("<option></option>");
+                    option.attr("value", value.dictValue);
+                    option.text(value.dictName);
+                    $("#nameclass").append(option);
+                });
+                initData();
+            }
+        });
+    });
+    function initData(){
+        $.each(timeStrategy, function(key, value){
+            if(value.dictValue == $("#nameclass").val())
+            {
+                $("#strategyContent").empty();
+                $("#strategyContent").append(value.dictDescription);
+                updateDom( $("#strategyContent").children() );
+            }
+        });
+
+    }
+
+    $('#nameclass').change(function(e)
+    {
+        var text = e.currentTarget.selectedOptions[0].text;
+        var values = e.currentTarget.selectedOptions[0].value;
+        //object-->   key:value
+        $.each(timeStrategy, function(key, value){
+            if(value.dictValue == values)
+            {
+                $("#strategyContent").empty();
+                $("#strategyContent").append(value.dictDescription);
+                updateDom($("#strategyContent").children());
+            }
+        });
+    })
+    function updateDom(domt,frist) { //$("#strategyContent").children()
+        if(domt.length == 0)
+            return;
+        for (var i = 0; i < domt.length ; i++) {
+            if((domt[i].id).indexOf("-dmrefreshdatetime") != -1)
+            {
+                laydate.render({
+                    elem: '#'+domt[i].id,
+                    type: 'datetime'
+                });
+            }
+        }
+        updateDom(domt.children())
+    }
+    function add() {
+        $('#form').bootstrapValidator();
+        var bootstrapValidator = $("#form").data('bootstrapValidator');
+        bootstrapValidator.validate();
+        if(!bootstrapValidator.isValid()){
+            return;
+        }
+        var formdata = $("#form").serializeObject();
+        var content = {};
+        for(var key in formdata)
+        {
+            if(key.indexOf("-dmrefresh") !=-1)
+            {
+                content[key.split("-dmrefresh")[0]] = formdata[key];
+            }
+            console.log(key);
+        }
+        formdata.content =  JSON.stringify(content);
+        $.ajax({
+            type : 'post',
+            url : domainName + '/api-p/Strategy/strategy',
+            contentType: "application/json; charset=utf-8",
+            data : JSON.stringify(formdata),
+            success : function(data) {
+                layer.msg("成功", {shift: -1, time: 1000}, function(){
+                    location.href = "strategyList.html";
+                });
+            }
+        });
+    }
+
+</script>
+</body>
+</html>

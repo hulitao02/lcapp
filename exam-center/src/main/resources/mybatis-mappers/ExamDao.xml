@@ -1,0 +1,837 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cloud.exam.dao.ExamDao">
+
+    <select id="findAll" resultType="com.cloud.exam.model.exam.Exam">
+        select * from Exam where parentid = 0
+        <if test="ew.emptyOfWhere == false">
+            AND ${ew.sqlSegment}
+        </if>
+    </select>
+
+
+    <!--   通过考试的状态，查询考试和人员的相关信息 -->
+    <select id="getExamAndUserByTypeAndStatus" parameterType="com.cloud.model.exam.ExamStatisticsDto"
+            resultType="com.cloud.exam.vo.ExamStatisticsVO">
+        SELECT
+            *
+        FROM
+            exam ex
+        LEFT JOIN drawresult ds
+        ON ex."id" = ds.ac_id
+        <where>
+            <if test="examTypeList != null and examTypeList.size > 0">
+                and ex.type in
+                <foreach collection="examTypeList" item="type" index="index" separator="," open="(" close=")">
+                    #{type}
+                </foreach>
+            </if>
+            <if test="examStatusList != null and examStatusList.size > 0 ">
+                and ex.exam_status in
+                <foreach collection="examStatusList" item="status" index="index" separator="," open="(" close=")">
+                    #{status}
+                </foreach>
+            </if>
+            <if test="queryDateYy != null">
+                AND to_char(ex.create_time, 'yyyy' ) = #{queryDateYy}
+            </if>
+            <if test="userId != null">
+                AND ds.user_id = #{userId}
+            </if>
+        </where>
+    </select>
+
+
+<!--    用户分组，用户的考试总量统计 -->
+    <select id="getStatisticsExCountGroupUserId" parameterType="com.cloud.model.exam.ExamStatisticsDto" resultType="map">
+        SELECT
+            ex_m.member_id as userid,
+        COUNT ( * ) as count
+        FROM
+        (
+            SELECT
+                ex."id",
+                ex."name",
+                eu.ac_id,
+                eu.member_id
+            FROM
+            exam ex
+            JOIN exam_depart_user_rel eu ON ex."id" = eu.ac_id
+            <where>
+                <if test="examTypeList != null and examTypeList.size > 0">
+                    and ex.type in
+                    <foreach collection="examTypeList" item="type" index="index" separator="," open="(" close=")">
+                        #{type}
+                    </foreach>
+                </if>
+                <if test="examStatusList != null and examStatusList.size > 0 ">
+                    and ex.exam_status in
+                    <foreach collection="examStatusList" item="status" index="index" separator="," open="(" close=")">
+                        #{status}
+                    </foreach>
+                </if>
+                <if test="queryDateYy != null">
+                    AND to_char(ex.create_time, 'yyyy' ) = #{queryDateYy}
+                </if>
+--                 通过用户ID 查询，当前人完成了多少的考试和竞答
+                <if test="userId != null">
+                    AND eu.member_id = #{userId}
+                </if>
+            </where>
+        ) ex_m
+        GROUP BY
+            ex_m.member_id
+        order by count desc
+        LIMIT 10 ;
+    </select>
+
+
+
+    <select id="getStatisticsQesCountGroupUserId" parameterType="com.cloud.model.exam.ExamStatisticsDto"
+            resultType="map">
+        SELECT
+            ex_m_q.member_id as userid,
+            COUNT ( * ) as count
+        FROM
+        (
+            SELECT
+                ex.id,
+                ex.name,
+                eu.member_id,
+                ed.ac_id,
+                ed.paper_id,
+                pr.question_id
+            FROM
+                exam ex
+            JOIN exam_depart_paper_rel ed ON ex."id" = ed.ac_id
+            JOIN exam_depart_user_rel eu ON ex."id" = eu.ac_id
+            JOIN paper_manage_rel pr ON ed.paper_id = pr.paper_id
+            <where>
+                <if test="examTypeList != null and examTypeList.size > 0">
+                    and ex.type in
+                    <foreach collection="examTypeList" item="type" index="index" separator="," open="(" close=")">
+                        #{type}
+                    </foreach>
+                </if>
+                <if test="examStatusList != null and examStatusList.size > 0 ">
+                    and ex.exam_status in
+                    <foreach collection="examStatusList" item="status" index="index" separator="," open="(" close=")">
+                        #{status}
+                    </foreach>
+                </if>
+                <if test="queryDateYy != null">
+                    AND to_char(ex.create_time, 'yyyy' ) = #{queryDateYy}
+                </if>
+            </where>
+        ) ex_m_q
+        GROUP BY
+            ex_m_q.member_id
+        order by count desc
+        LIMIT 10;
+
+    </select>
+
+
+    <!--  自测类型考试，用户维度统计，每个用户的考试总量  -->
+    <select id="getStatisticsSelfExCountGroupUserId" parameterType="com.cloud.model.exam.ExamStatisticsDto" resultType="map">
+        SELECT t.user_id as userid,
+               COUNT (*) as count
+        FROM
+            (
+                SELECT
+                    ex.id,
+                    ex.name,
+                    dr.user_id
+                FROM
+                    drawresult dr
+                    JOIN exam ex ON dr.ac_id = ex.id
+                <where>
+                    <if test="examTypeList != null and examTypeList.size > 0">
+                        and ex.type in
+                        <foreach collection="examTypeList" item="type" index="index" separator="," open="(" close=")">
+                            #{type}
+                        </foreach>
+                    </if>
+                    <!-- 考试状态 -->
+                    <if test="examStatusList != null and examStatusList.size > 0 ">
+                        and ex.exam_status in
+                        <foreach collection="examStatusList" item="status" index="index" separator="," open="(" close=")">
+                            #{status}
+                        </foreach>
+                    </if>
+                    <!-- 用户状态 -->
+                    <if test="userStatusList != null and userStatusList.size > 0 ">
+                        and dr.user_status in
+                        <foreach collection="userStatusList" item="status" index="index" separator="," open="(" close=")">
+                            #{status}
+                        </foreach>
+                    </if>
+                    <!-- 日期查询参数 -->
+                    <if test="queryDateYy != null">
+                        AND to_char(ex.create_time, 'yyyy' ) = #{queryDateYy}
+                    </if>
+                </where>
+            ) t
+        GROUP BY
+            T.user_id
+        order  by count desc
+            ;
+    </select>
+
+
+    <!--  自测用户分组 用户维护总计试题总量  -->
+    <select id="getStatisticsSelfQesCountGroupUserId" parameterType="com.cloud.model.exam.ExamStatisticsDto" resultType="map">
+        SELECT
+            T.user_id AS userid,
+            COUNT ( * ) as count
+        FROM
+            (
+            SELECT
+                dr.ac_id,
+                dr.user_id,
+                pr.paper_id,
+                pr.question_id
+            FROM
+               exam ex
+                JOIN drawresult dr ON ex.id = dr.ac_id
+                JOIN paper_manage_rel pr ON dr.paper_id = pr.paper_id
+            <where>
+                <if test="examTypeList != null and examTypeList.size > 0">
+                    and ex.type in
+                    <foreach collection="examTypeList" item="type" index="index" separator="," open="(" close=")">
+                        #{type}
+                    </foreach>
+                </if>
+                <!-- 用户状态 -->
+                <if test="userStatusList != null and userStatusList.size > 0 ">
+                    and dr.user_status in
+                    <foreach collection="userStatusList" item="status" index="index" separator="," open="(" close=")">
+                        #{status}
+                    </foreach>
+                </if>
+
+                <if test="examStatusList != null and examStatusList.size > 0 ">
+                    and ex.exam_status in
+                    <foreach collection="examStatusList" item="status" index="index" separator="," open="(" close=")">
+                        #{status}
+                    </foreach>
+                </if>
+                <if test="queryDateYy != null">
+                    AND to_char(ex.create_time, 'yyyy' ) = #{queryDateYy}
+                </if>
+            </where>
+            ) T
+        GROUP BY
+          T.user_id
+        order  by count desc
+    </select>
+
+
+
+<!--    查询自测中的 考试-->
+    <select id="getSelfExamingUserList" parameterType="com.cloud.model.exam.ExamStatisticsDto" resultType="map">
+        SELECT
+            ex.id,
+            ex.name,
+            ex.exam_status,
+            ds.user_id as userid
+        FROM
+             exam ex
+        JOIN drawresult ds ON ex.id = ds.ac_id
+        <where>
+            <if test="examTypeList != null and examTypeList.size > 0">
+                and ex.type in
+                <foreach collection="examTypeList" item="type" index="index" separator="," open="(" close=")">
+                    #{type}
+                </foreach>
+            </if>
+            <if test="examStatusList != null and examStatusList.size > 0 ">
+                and ex.exam_status in
+                <foreach collection="examStatusList" item="status" index="index" separator="," open="(" close=")">
+                    #{status}
+                </foreach>
+               <!-- and ds.user_status = 6 -->
+            </if>
+            <if test="userStatusList != null and userStatusList.size > 0 ">
+                and ds.user_status in
+                <foreach collection="userStatusList" item="status" index="index" separator="," open="(" close=")">
+                    #{status}
+                </foreach>
+            </if>
+
+            <if test="queryDateYy != null">
+                AND to_char(ex.create_time, 'yyyy' ) = #{queryDateYy}
+            </if>
+            <if test="examId != null">
+                AND ex.id = #{examId}
+            </if>
+        </where>
+    </select>
+
+
+    <!--  非JD活动的，创建的试卷  -->
+    <select id="getNotCompetiPCountCreated" parameterType="com.cloud.model.exam.ExamStatisticsDto" resultType="map">
+        SELECT
+            to_char( p.create_time, 'yyyy-MM' ) AS date,
+            COUNT (DISTINCT p.id) AS count
+        FROM
+            paper p
+        <where>
+            <!-- 5/12 增加试卷类型-->
+            <if test="paperTypeList != null and paperTypeList.size > 0">
+                and p.type in
+                <foreach collection="paperTypeList" item="type" index="index" separator="," open="(" close=")">
+                    #{type}
+                </foreach>
+            </if>
+            <if test="queryDateYy != null">
+                and to_char(p.create_time,'yyyy') = #{queryDateYy}
+            </if>
+        </where>
+        GROUP BY
+            to_char( p.create_time, 'yyyy-MM' ) ;
+    </select>
+
+    <!--   创建的JD活动类型，才会有的试卷 -->
+    <select id="getCompetiPCountCreated" parameterType="com.cloud.model.exam.ExamStatisticsDto" resultType="map">
+
+        SELECT
+            to_char( p.create_time, 'yyyy-MM' ) AS date,
+            COUNT ( DISTINCT p.id ) AS count
+        FROM
+            paper p
+        join competition_exam_paper_rel cpr on p.id = cpr.paper_id
+        join exam ex on ex.id = cpr.ac_id
+        <where>
+            <!-- 5/12 新增 试卷类型  -->
+            <if test="paperTypeList != null and paperTypeList.size > 0">
+                and p.type in
+                <foreach collection="paperTypeList" item="type" index="index" separator="," open="(" close=")">
+                    #{type}
+                </foreach>
+            </if>
+
+            <if test="examTypeList != null and examTypeList.size > 0">
+                and ex.type in
+                <foreach collection="examTypeList" item="type" index="index" separator="," open="(" close=")">
+                    #{type}
+                </foreach>
+            </if>
+
+            <if test="queryDateYy != null">
+                and to_char(p.create_time,'yyyy') = #{queryDateYy}
+            </if>
+        </where>
+            GROUP BY
+            to_char( p.create_time, 'yyyy-MM' ) ;
+    </select>
+
+
+    <!--   竞答活动使用的试卷 -->
+    <select id="getCompetiPCountUsed" parameterType="com.cloud.model.exam.ExamStatisticsDto" resultType="map">
+        SELECT
+            t1.date as date,
+            COUNT ( * ) as count
+        FROM
+        (
+        SELECT
+            ex.id AS examid,
+            to_char( ex.create_time, 'yyyy-MM' ) AS date,
+            ep.paper_id AS paperid
+        FROM
+            competition_exam_paper_rel ep
+        JOIN exam ex ON ep.ac_id = ex.id
+        WHERE ep.paper_id is not NULL
+        <if test="examTypeList != null and examTypeList.size > 0">
+            and ex.type in
+            <foreach collection="examTypeList" item="type" index="index" separator="," open="(" close=")">
+                #{type}
+            </foreach>
+        </if>
+        <if test="queryDateYy != null">
+            and to_char(ex.create_time,'yyyy') = #{queryDateYy}
+        </if>
+        ) t1
+        GROUP BY
+        t1.date;
+    </select>
+
+
+    <!--    试卷被使用 统计-->
+    <select id="getStatisticsPaperCountUsed" parameterType="com.cloud.model.exam.ExamStatisticsDto" resultType="map">
+        SELECT
+         t1.date as date,
+        COUNT ( * ) as count
+        FROM
+        (
+            SELECT
+                ex.id AS examid,
+                to_char( ex.create_time, 'yyyy-MM' ) AS date,
+                ep.paper_id AS paperid
+            FROM
+                exam_depart_paper_rel ep
+            JOIN exam ex ON ep.ac_id = ex.id
+            WHERE ep.paper_id is not NULL
+    --      添加活动类型 过滤
+            <if test="examTypeList != null and examTypeList.size > 0">
+                and ex.type in
+                <foreach collection="examTypeList" item="type" index="index" separator="," open="(" close=")">
+                    #{type}
+                </foreach>
+            </if>
+            <if test="queryDateYy != null">
+               and to_char(ex.create_time,'yyyy') = #{queryDateYy}
+            </if>
+        ) t1
+        GROUP BY
+        t1.date;
+    </select>
+
+
+    <!--   只统计每个月的 考试的数量 (根据类型)  统计有效开始活动的 排除 (0,5) (训练统计)-->
+    <select id="getStatisticsExamCountByTypeAndStatus" parameterType="com.cloud.model.exam.ExamStatisticsDto" resultType="map">
+        SELECT
+            to_char( ex.start_time, 'yyyy-MM' ) as date ,
+            COUNT ( * ) as count
+        FROM
+        exam ex
+            <!-- where ex.exam_status not in (0,5) -->
+        <where>
+            <if test="examTypeList != null and examTypeList.size > 0">
+                and ex.type in
+                <foreach collection="examTypeList" item="type" index="index" separator="," open="(" close=")">
+                    #{type}
+                </foreach>
+            </if>
+            <if test="examStatusList != null and examStatusList.size > 0 ">
+                and ex.exam_status in
+                <foreach collection="examStatusList" item="status" index="index" separator="," open="(" close=")">
+                    #{status}
+                </foreach>
+            </if>
+            <if test="queryDateYy != null">
+                AND to_char(ex.start_time, 'yyyy' ) = #{queryDateYy}
+            </if>
+        </where>
+        GROUP BY
+        to_char(ex.start_time, 'yyyy-MM' );
+    </select>
+
+
+    <!--统计考试, 参考人员每月参加, -->
+    <select id="getStatisticsExUserCountByTypeAndStatus" parameterType="com.cloud.model.exam.ExamStatisticsDto" resultType="map">
+        SELECT
+            t1.date as date,
+            COUNT ( * ) as count
+        FROM
+        (
+            SELECT
+                ex.id ,
+                to_char( ex.create_time, 'yyyy-MM' ) AS date
+            FROM
+                exam ex
+            JOIN drawresult ds on ex.id = ds.ac_id
+            <!-- JOIN exam_depart_user_rel eu ON eu.ac_id = ex.id -->
+            <where>
+                <!-- 增加人员状态，不是0,5 表示都参与了活动 -->
+                <if test="userStatusList != null and userStatusList.size > 0">
+                    and ds.user_status in
+                    <foreach collection="userStatusList" item="status" index="index" separator="," open="(" close=")">
+                        #{status}
+                    </foreach>
+                </if>
+                <if test="examTypeList != null and examTypeList.size > 0">
+                    and ex.type in
+                    <foreach collection="examTypeList" item="type" index="index" separator="," open="(" close=")">
+                        #{type}
+                    </foreach>
+                </if>
+                <if test="examStatusList != null and examStatusList.size > 0 ">
+                    and ex.exam_status in
+                    <foreach collection="examStatusList" item="status" index="index" separator="," open="(" close=")">
+                        #{status}
+                    </foreach>
+                </if>
+                <if test="queryDateYy != null">
+                    AND to_char(ex.start_time, 'yyyy' ) = #{queryDateYy}
+                </if>
+            </where>
+        ) t1
+        GROUP BY date;
+    </select>
+
+
+    <!--考试, 试卷数量统计情况 ， 统计有效活动的试卷 排除(0,5)-->
+    <select id="getStatisticsExPaperCountByTypeAndStatus" parameterType="com.cloud.model.exam.ExamStatisticsDto" resultType="map">
+        SELECT
+             t1.date as date,
+            COUNT ( * ) as count
+        FROM
+        (
+            SELECT
+                ex.id ,
+                to_char( ex.create_time, 'yyyy-MM' ) AS date,
+                ep.paper_id
+            FROM
+                exam ex
+            JOIN exam_depart_paper_rel ep  ON ep.ac_id = ex.id
+            WHERE ep.paper_id is not NULL
+            <if test="examTypeList != null and examTypeList.size > 0">
+                and ex.type in
+                <foreach collection="examTypeList" item="type" index="index" separator="," open="(" close=")">
+                    #{type}
+                </foreach>
+            </if>
+            <if test="examStatusList != null and examStatusList.size > 0 ">
+                and ex.exam_status in
+                <foreach collection="examStatusList" item="status" index="index" separator="," open="(" close=")">
+                    #{status}
+                </foreach>
+            </if>
+            <if test="queryDateYy != null">
+                AND to_char(ex.create_time, 'yyyy' ) = #{queryDateYy}
+            </if>
+        ) t1
+        GROUP BY date;
+    </select>
+
+
+
+
+
+
+
+
+    <!--
+
+         竞答和试卷关联表： competition_exam_paper_rel
+         竞答之外和试卷的关联表: exam_depart_paper_rel
+    -->
+    <select id="getStatisticsExUserCountGroupExId" parameterType="com.cloud.model.exam.ExamStatisticsDto" resultType="map">
+        SELECT  t2.id ,
+            t2.name ,
+            to_char(t2.start_time,'yyyy-MM-dd HH24:MI:SS') as date ,
+            t3.count
+        from  exam t2
+        join (
+            SELECT
+                t1.id as id,
+                COUNT ( * ) as count
+            FROM
+                (
+                    SELECT
+                        ex.id ,
+                        to_char( ex.create_time, 'yyyy-MM' ) AS date,
+                        ds.user_id as userId
+                    FROM
+                         exam ex
+                         join drawresult ds on ex.id = ac_id
+                    <where>
+                        <!-- 5/12 增加参与人员状态  -->
+                        <if test="userStatusList != null and userStatusList.size > 0">
+                            and ds.user_status in
+                            <foreach collection="userStatusList" item="status" index="index" separator="," open="(" close=")">
+                                #{status}
+                            </foreach>
+                        </if>
+
+                        <if test="examTypeList != null and examTypeList.size > 0">
+                            and ex.type in
+                            <foreach collection="examTypeList" item="type" index="index" separator="," open="(" close=")">
+                                #{type}
+                            </foreach>
+                        </if>
+                        <if test="examStatusList != null and examStatusList.size > 0 ">
+                            and ex.exam_status in
+                            <foreach collection="examStatusList" item="status" index="index" separator="," open="(" close=")">
+                                #{status}
+                            </foreach>
+                        </if>
+                        <if test="queryDateYy != null">
+                            AND to_char(ex.create_time, 'yyyy' ) = #{queryDateYy}
+                        </if>
+                    </where>
+                ) t1
+            GROUP BY id
+            ) t3
+        on t2.id = t3.id
+        order by t2.start_time desc ;
+    </select>
+
+
+    <!-- 统计活动试题的数量 （竞答：1） 参加人员总数
+         竞答关联表： competition_exam_paper_rel
+         竞答之外的关联表: exam_depart_paper_rel
+    -->
+    <select id="getStatisticsExPQCountGroupExId" parameterType="com.cloud.model.exam.ExamStatisticsDto" resultType="map">
+            SELECT
+                t2.id,
+                t2.count,
+                t3.name ,
+                to_char(t3.start_time,'yyyy-MM-dd HH24:MI:SS') as date
+            FROM
+                (
+                SELECT
+                    t.id,
+                    COUNT ( * ) AS count
+                FROM
+                    (
+                    SELECT
+                        ex.id,
+                        pr.question_id
+                    FROM
+                        exam ex
+                        JOIN competition_exam_paper_rel ep ON ex.id = ep.ac_id
+                        JOIN paper_manage_rel pr ON pr.paper_id = ep.paper_id
+                    WHERE
+                        ep.paper_id IS NOT NULL
+                        <if test="queryDateYy != null">
+                            AND to_char(ex.create_time, 'yyyy' ) = #{queryDateYy}
+                        </if>
+                    ) t
+                GROUP BY
+                    t.id
+                ) t2
+            JOIN exam t3 ON t2.id = t3.id
+            order by t3.start_time desc ;
+    </select>
+
+
+    <!-- 统计活动试题的数量  非竞答活动（竞答：1） 参加人员总数
+     竞答关联表： competition_exam_paper_rel
+     竞答之外的关联表: exam_depart_paper_rel
+-->
+    <select id="getNotCompetiExPQCountGroupExId" parameterType="com.cloud.model.exam.ExamStatisticsDto" resultType="map">
+            SELECT
+            t2.id,
+                t2.count,
+                t3.name ,
+                to_char(t3.start_time,'yyyy-MM-dd HH24:MI:SS') as date
+            FROM
+                (
+                SELECT
+                    t.id,
+                    COUNT ( * ) AS count
+                FROM
+                    (
+                    SELECT
+                        ex.id,
+                        pr.question_id
+                    FROM
+                        exam ex
+                        JOIN exam_depart_paper_rel ep ON ex.id = ep.ac_id
+                        JOIN paper_manage_rel pr ON pr.paper_id = ep.paper_id
+                    WHERE
+                        ep.paper_id IS NOT NULL
+                        <if test="examTypeList != null and examTypeList.size > 0">
+                            and ex.type in
+                            <foreach collection="examTypeList" item="type" index="index" separator="," open="(" close=")">
+                                #{type}
+                            </foreach>
+                        </if>
+                        <if test="queryDateYy != null">
+                            AND to_char(ex.create_time, 'yyyy' ) = #{queryDateYy}
+                        </if>
+                    ) t
+                GROUP BY
+                    t.id
+                ) t2
+            JOIN exam t3 ON t2.id = t3.id
+            order by t3.start_time desc ;
+    </select>
+
+
+
+<!--    查询考试，通过类型和状态
+                getExamListByTypeAndStatus -->
+    <select id="getExamListByTypeAndStatus" parameterType="com.cloud.model.exam.ExamStatisticsDto" resultType="com.cloud.exam.model.exam.Exam">
+        select * from exam ex
+        <where>
+            <if test="examTypeList != null and examTypeList.size > 0">
+                and ex.type in
+                <foreach collection="examTypeList" item="type" index="index" separator="," open="(" close=")">
+                    #{type}
+                </foreach>
+            </if>
+            <if test="examStatusList != null and examStatusList.size > 0 ">
+                and ex.exam_status in
+                <foreach collection="examStatusList" item="status" index="index" separator="," open="(" close=")">
+                    #{status}
+                </foreach>
+            </if>
+            <if test="queryDateYy != null">
+                AND to_char(ex.create_time, 'yyyy' ) = #{queryDateYy}
+            </if>
+        </where>
+    </select>
+
+
+    <!--  查询正在考试人员信息  -->
+    <select id="getExamingUserList" parameterType="com.cloud.model.exam.ExamStatisticsDto" resultType="map">
+        SELECT
+            ex."id",
+            ex."name",
+            ex.exam_status,
+            ds.user_id as userid
+        FROM
+            exam ex
+        JOIN drawresult ds
+        ON ex."id" = ds.ac_id
+        <where>
+            <if test="examTypeList != null and examTypeList.size > 0">
+                and ex.type in
+                <foreach collection="examTypeList" item="type" index="index" separator="," open="(" close=")">
+                    #{type}
+                </foreach>
+            </if>
+            <if test="examStatusList != null and examStatusList.size > 0 ">
+                and ex.exam_status in
+                <foreach collection="examStatusList" item="status" index="index" separator="," open="(" close=")">
+                    #{status}
+                </foreach>
+            </if>
+
+            <!-- 用户状态 -->
+            <if test="userStatusList != null and userStatusList.size > 0 ">
+                and ds.user_status in
+                <foreach collection="userStatusList" item="status" index="index" separator="," open="(" close=")">
+                    #{status}
+                </foreach>
+            </if>
+
+            <if test="queryDateYy != null">
+                AND to_char(ex.create_time, 'yyyy' ) = #{queryDateYy}
+            </if>
+            <if test="examId != null">
+                AND ex.id = #{examId}
+            </if>
+        </where>
+    </select>
+
+
+    <!--
+        根据活动状态和type类型，统计人员总量
+        用户状态必须传递
+     -->
+    <select id="getStaticExUserBystatusAndType" parameterType="com.cloud.model.exam.ExamStatisticsDto"
+            resultType="map">
+            select
+                t3.COUNT, t3.ID ,e3.name,
+                to_char(e3.start_time,'yyyy-MM-dd HH24:MI:SS') as date
+            from
+            (
+                select
+                sum(
+                case WHEN
+                    <if test="userStatusList != null and userStatusList.size > 0">
+                        t1.userStatus in
+                        <foreach collection="userStatusList" item="status" index="index" separator="," open="(" close=")">
+                            #{status}
+                        </foreach>
+                    </if>
+                     then 1 else 0 end ) as count ,
+                t1.ID
+                from
+                (
+                    SELECT
+                    ex.id as ID,
+                    ds.user_status as userStatus,
+                    ds.user_id as userId
+                    FROM
+                    exam ex
+                    JOIN drawresult ds
+                    ON ex."id" = ds.ac_id
+                    <where>
+                        <if test="examTypeList != null and examTypeList.size > 0">
+                            and ex.type in
+                            <foreach collection="examTypeList" item="type" index="index" separator="," open="(" close=")">
+                                #{type}
+                            </foreach>
+                        </if>
+                        <if test="examStatusList != null and examStatusList.size > 0 ">
+                            and ex.exam_status in
+                            <foreach collection="examStatusList" item="status" index="index" separator="," open="(" close=")">
+                                #{status}
+                            </foreach>
+                        </if>
+                        <if test="queryDateYy != null">
+                            AND to_char(ex.create_time, 'yyyy' ) = #{queryDateYy}
+                        </if>
+                        <if test="userId != null">
+                            AND ds.user_id = #{userId}
+                        </if>
+                    </where>
+                    ) t1
+                    group by t1.ID
+            ) t3 join  exam e3 on t3.ID = e3.id
+    </select>
+
+
+    <!-- 统计有人参加的 自测类型的考试  -->
+    <select id="getStatisticsSelfExUserCountGroupExId" parameterType="com.cloud.model.exam.ExamStatisticsDto" resultType="map">
+        SELECT  t2.id ,
+                t2.name ,
+                to_char(t2.start_time,'yyyy-MM-dd HH24:MI:SS') as date ,
+                t3.count
+        from  exam t2
+        join
+        (
+        SELECT
+            t1.id as id,
+            COUNT ( * ) as count
+        FROM
+        (
+            SELECT
+                ex.id ,
+                to_char( ex.create_time, 'yyyy-MM' ) AS date,
+                eu.member_id
+            FROM
+            exam ex
+            JOIN exam_depart_user_rel eu ON eu.ac_id = ex.id
+            WHERE eu.member_id is not NULL and ex.exam_status not in (0,5)
+            <if test="examTypeList != null and examTypeList.size > 0">
+                and ex.type in
+                <foreach collection="examTypeList" item="type" index="index" separator="," open="(" close=")">
+                    #{type}
+                </foreach>
+            </if>
+            <if test="examStatusList != null and examStatusList.size > 0 ">
+                and ex.exam_status in
+                <foreach collection="examStatusList" item="status" index="index" separator="," open="(" close=")">
+                    #{status}
+                </foreach>
+            </if>
+            <if test="queryDateYy != null">
+                AND to_char(ex.create_time, 'yyyy' ) = #{queryDateYy}
+            </if>
+            ) t1
+            GROUP BY id
+        ) t3
+        on t2.id = t3.id
+        order by t2.start_time desc ;
+    </select>
+
+    <!--查询用户当前月的训练时间-->
+    <select id="getUserTrainTimeAndRank" parameterType="String" resultType="com.cloud.exam.model.exam.DrawResult">
+        SELECT de.* from drawresult de WHERE de.login_date >= to_timestamp(substring(#{date} FROM 1 for 10),'yyyy-MM-dd')
+        and de.exam_type = 2 and de.user_status = 4
+    </select>
+    <select id="isUserRelated" resultType="com.cloud.model.exam.UserRelatedDto">
+        select member_id as userid,count(*) as count,'参赛人员' as msg from exam_depart_user_rel
+        where member_id in ${inStr} group by member_id
+        union all
+        select member_id as userid,count(*) as count,'管理人员' as msg from exam_manage_group_rel
+        where member_id in ${inStr} group by member_id
+        union all
+        select creator as userid,count(*) as count,'创建活动' as msg from exam
+        where creator in  ${inStr} group by creator
+        union all
+        select creator as userid,count(*) as count,'创建试卷' as msg from paper
+        where creator in  ${inStr} group by creator
+    </select>
+
+
+</mapper>
+
+

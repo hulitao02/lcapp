@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.cloud.model.dao.KnowledgeProDao">
+    <!--知识点和属性的关联关系-->
+    <resultMap id="KP_Pro_Map" type="com.cloud.model.bean.vo.KnowledgeProVO">
+        <!--        数据库标识Id-->
+        <id column="id" jdbcType="INTEGER" property="id"/>
+        <!--       知识点ID -->
+        <id column="kp_id" jdbcType="BIGINT" property="kpId"/>
+        <!--        属性-->
+        <id column="pro_proname" jdbcType="VARCHAR" property="proProname"/>
+        <id column="status" jdbcType="INTEGER" property="status"/>
+        <id column="update_time" jdbcType="TIMESTAMP" property="updateTime"/>
+        <!--        属性的类型-->
+        <id column="pro_type_name" jdbcType="VARCHAR" property="proTypeName"/>
+        <!--  是否是属性-->
+        <id column="is_property" jdbcType="INTEGER" property="isProperty"/>
+        <id column="pro_code" jdbcType="VARCHAR" property="proCode"/>
+        <id column="pro_type_code" jdbcType="VARCHAR" property="proTypeCode"/>
+
+    </resultMap>
+
+    <sql id="Base_KP_Pro_Map">
+        id , kp_id, pro_proname, status, pro_type_id , pro_type_name
+    </sql>
+
+    <select id="getKpProList" resultMap="KP_Pro_Map" parameterType="Map">
+        select
+        kpro.id,kpro.pro_code,kpro.pro_type_code, kpro.kp_id, kpro.pro_proname, kpro.status, kpro.pro_type_name,
+        kpro.update_time, kpro.is_property
+        from
+        knowledge_pro kpro
+        <where>
+            kpro.status = 1
+            <if test="kpId != null">
+                and kpro.kp_id = #{kpId}
+            </if>
+            <if test="proTypeName != null">
+                and kpro.pro_type_name = #{proTypeName}
+            </if>
+            <if test="type != null">
+                and kpro.is_property = #{type}
+            </if>
+        </where>
+    </select>
+
+    <!-- 修改属性分组名称-->
+    <update id="updateInfoByTypeCode" parameterType="map">
+        UPDATE knowledge_pro
+        SET pro_type_name = #{proTypeName}
+        WHERE
+        pro_type_code = #{proTypeCode}
+    </update>
+
+
+    <!-- 修改属性名称-->
+    <update id="updateInfoByProCode" parameterType="map">
+        UPDATE knowledge_pro
+        SET pro_proname = #{proName}
+        WHERE
+        pro_code = #{proCode}
+    </update>
+
+    <!-- 删除属性-->
+    <delete id="delInfoByProCode" parameterType="string">
+        DELETE
+        FROM
+        knowledge_pro
+        WHERE
+        1 = 1
+        AND pro_code =#{proCode}
+    </delete>
+
+    <!-- 删除属性分组-->
+    <delete id="delInfoByProTypeCode" parameterType="string">
+        DELETE
+        FROM
+        knowledge_pro
+        WHERE
+        1 = 1
+        AND pro_type_code =#{proTypeCode}
+    </delete>
+
+    <delete id="delInfoByProCodeAndKpId" parameterType="map">
+        DELETE
+        FROM
+        knowledge_pro
+        WHERE
+        1 = 1
+        <if test="proCode != null">
+            AND pro_code =#{proCode}
+        </if>
+        <if test="kp_id != null">
+            AND kp_id=#{kp_id}
+        </if>
+        <if test="proTypeCode != null">
+            AND pro_type_code = #{proTypeCode}
+        </if>
+    </delete>
+
+
+</mapper>

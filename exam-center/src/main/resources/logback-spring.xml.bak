@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<configuration scan="true" scanPeriod="10 seconds">
+    <springProperty scope="context" name="server.name" source="spring.application.name"></springProperty>
+    <springProperty scope="context" name="logstash.remoteHost" source="logstash.host"></springProperty>
+    <springProperty scope="context" name="logstash.port" source="logstash.port"></springProperty>
+    <!-- logstash 设置 -->
+    <appender name="LOGSTASH" class="net.logstash.logback.appender.LogstashTcpSocketAppender">
+        <param name="Encoding" value="UTF-8"/>
+        <!-- logstash 服务器 ip -->
+        <remoteHost>${logstash.remoteHost}</remoteHost>
+        <!-- logstash tcp 端口-->
+        <port>${logstash.port}</port>
+        <!-- encoder is required -->
+        <encoder charset="UTF-8" class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
+            <providers>
+                <timestamp>
+                    <timeZone>UTC</timeZone>
+                </timestamp>
+                <pattern>
+                    <pattern>
+                        {
+                        "serviceName": "${server.name}",
+                        "level": "%level",
+                        "message": "%message",
+                        "stack_trace": "%exception{5}",
+                        "pid": "${PID:-}",
+                        "thread": "%thread",
+                        "class": "%logger{40}"
+                        }
+                    </pattern>
+                </pattern>
+            </providers>
+        </encoder>
+        <!-- 临界值过滤器，过滤掉低于指定临界值的日志。当日志级别等于或高于临界值时，过滤器返回NEUTRAL；当日志级别低于临界值时，日志会被拒绝,OFF>ERROR>WARN>INFO>DEBUG>TRACE>ALL -->
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>INFO</level>
+        </filter>
+    </appender>
+
+    <!--异步发送日志-->
+    <appender name="ASYNC" class="ch.qos.logback.classic.AsyncAppender">
+        <appender-ref ref="LOGSTASH" />
+    </appender>
+
+    <!-- 日志输出级别 -->
+    <root level="INFO">
+        <!-- 添加logstash日志输出 -->
+        <appender-ref ref="ASYNC" />
+    </root>
+
+</configuration>

@@ -1,0 +1,1851 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Layui</title>
+    <meta name="renderer" content="webkit" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1"
+    />
+    <link
+      rel="stylesheet"
+      type="text/css"
+      media="screen"
+      href="../../css/bootstrap.min.css"
+    />
+    <link rel="stylesheet" href="../../layui/css/layui-2.6.css" />
+    <link
+      rel="stylesheet"
+      type="text/css"
+      media="screen"
+      href="../../js/plugin/webuploader/zwUploader/webuploader.css"
+    />
+  </head>
+  <style>
+    .background {
+      background: #e5f5f6;
+    }
+
+    .block {
+      width: 100px;
+      height: 25px;
+      padding: 0;
+      margin: 9px 10px;
+      text-align: center;
+      line-height: 25px;
+      color: #51db41;
+      background: #dff8bf;
+      border: 1px solid #63db56;
+    }
+
+    .layui-form-text > p {
+      font-size: 14px;
+      padding: 9px 10px;
+    }
+
+    .layui-form-text > p > span {
+      width: 60px;
+      height: 25px;
+      font-size: 12px;
+      text-align: center;
+      line-height: 25px;
+      color: #5788e1;
+      background: #e0e4ff;
+      border: 1px solid #abd0e5;
+    }
+    .layui-form-text > p > span:last-child {
+      /* height:25px; */
+      /* width:30px; */
+      line-height: 25px;
+      /* text-align: center; */
+      /* font-size: 22px; */
+      cursor: pointer;
+    }
+    .layui-anim {
+      z-index: 9;
+    }
+    #box .layui-input,
+    #box .layui-textarea {
+      width: 95%;
+      display: initial;
+    }
+    #tiao {
+      display: inline-block;
+      width: 100%;
+      height: 4px;
+      background: #ddd;
+      border-radius: 3px;
+      position: relative;
+      top: -10px;
+    }
+
+    #input {
+      width: 40px;
+      text-align: center;
+      vertical-align: top;
+      border: none;
+      position: relative;
+      top: 10px;
+      left: -40px;
+    }
+
+    #yuan {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      border-radius: 50% 50%;
+      background: #177ad8;
+      position: absolute;
+      margin-top: -4px;
+      cursor: pointer;
+      box-shadow: 0px 0px 3px #177ad8;
+    }
+
+    #jindu {
+      width: 0px;
+      height: 4px;
+      background-color: #177ad8;
+      border-radius: 3px;
+    }
+    .layui-progress {
+      top: 10px;
+      width: 90%;
+    }
+    .choice {
+      color: #37c2eb;
+      background: #bfedf8;
+      border: 1px solid #56b6db;
+    }
+    #answer input {
+      margin: 10px 0;
+    }
+    #img {
+      width: 100vw;
+      height: 100vh;
+      background-color: #177ad8;
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+    }
+    #img .img_content {
+      width: 700px;
+      height: 500px;
+      background-color: red;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+    #img .img_content image {
+      width: 100%;
+      height: 100%;
+    }
+    .layui-col-md4 > label {
+      width: 100%;
+      text-align: center;
+    }
+    .layui-icon {
+      font-size: 20px;
+    }
+    .layui-icon-ok {
+      left: 35px !important;
+      top: 7px !important;
+    }
+    .layui-icon-close {
+      left: 85px !important;
+      top: 7px !important;
+    }
+    #back{
+      display: inline-block;
+      height: 38px;
+      line-height: 38px;
+      padding: 0 18px;
+      background-color: #009688;
+      color: #fff;
+      white-space: nowrap;
+      text-align: center;
+      font-size: 14px;
+      border: none;
+      border-radius: 2px;
+      cursor: pointer;
+    }
+    .layui-table-view{
+      margin: 10px 20px;
+    }
+  </style>
+
+  <body>
+    <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+      <fieldset
+        class="layui-elem-field layui-field-title"
+        style="margin-top: 20px"
+      >
+        <!-- <legend>默认风格的Tab</legend> -->
+      </fieldset>
+      <fieldset>
+        <form class="layui-form select content" lay-filter="type">
+          <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+            <div class="layui-col-md2">
+              <div class="layui-col-md4">
+                <label class="layui-form-label">题目类型</label>
+              </div>
+              <div class="layui-col-md6">
+                <select name="type" lay-filter="type" id="type" disabled></select>
+              </div>
+            </div>
+            <div class="layui-col-md4">
+              <div class="layui-col-md4">
+                <label class="layui-form-label">所属知识点</label>
+              </div>
+              <div class="layui-col-md8">
+                <input
+                  style="width: 100%"
+                  name="kpId"
+                  id="treeSelect"
+                  lay-verify="kpId"
+                  autocomplete="off"
+                  placeholder="请输入标题"
+                  class="layui-input"
+                />
+                              
+              </div>
+            </div>
+            <div class="layui-col-md3">
+              <div class="layui-col-md4">
+                <label class="layui-form-label">难度值</label>
+              </div>
+              <div class="layui-col-md6">
+                <div id="progressBar">
+                  <input
+                    type="text"
+                    id="input"
+                    value="简单"
+                    placeholder=""
+                    autocomplete="off"
+                  />
+                  <div id="tiao">
+                    <div id="yuan"></div>
+                    <div id="jindu"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="layui-col-md3">
+              <div class="layui-col-md4">
+                <label class="layui-form-label">情报方向</label>
+              </div>
+              <div class="layui-col-md6">
+                <select name="directId" id="intDirect"></select>
+              </div>
+            </div>
+          </div>
+        </form>
+        <div id="box">
+          <form class="layui-form content" style="margin-top: 50px">
+            <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12 background">
+              <div class="layui-form-item">
+                <div class="layui-form-item layui-form-text">
+                  <p>
+                    <span class="layui-inline">题干:</span>
+                    在下方输入框内输入题干!
+                  </p>
+
+                  <textarea
+                    name="question"
+                    lay-verify="title"
+                    placeholder="请输入内容"
+                    class="layui-textarea"
+                  ></textarea>
+                  <span class="upload-container"
+                    ><i class="layui-icon"></i></span
+                  >
+                  <div class="upload-list" clickName="question"></div>
+                  <!-- <div class="layui-progress" lay-filter="question" >
+                              <div class="layui-progress-bar" lay-percent="0%"></div>
+                        </div> -->
+                </div>
+                <!-- <div class="layui-form-item layui-form-text">
+                  <label class="layui-form-label block">影像服务</label>
+                  <div class="layui-input-block">
+                    <input
+                      type="text"
+                      autocomplete="off"
+                      id="service"
+                      name="service"
+                      placeholder="请输入影像服务地址"
+                      class="layui-input"
+                      readonly="“readonly”"
+                    />
+                    <span class="upload-container"
+                      ><i class="layui-icon"></i></span
+                    >
+                    <div class="upload-list"></div>
+                  </div>
+                </div> -->
+                <div id="content" class="layui-form-item">
+                  <div
+                    class="layui-form-item layui-form-text name"
+                    name="radio"
+                  >
+                    <label class="layui-form-label block">选项</label>
+                    <div class="layui-row" id="options">
+                      <div class="layui-col-xs6">
+                        <div class="layui-form-item layui-form-text">
+                          <label class="layui-form-label block">A</label>
+                          <div class="layui-input-block">
+                            <input
+                              type="text"
+                              name="A"
+                              placeholder="请输入标题"
+                              autocomplete="off"
+                              class="layui-input"
+                            />
+                            <span class="upload-container"
+                              ><i class="layui-icon"></i></span
+                            >
+                            <div class="upload-list" clickName="A"></div>
+                            <!-- <div class="layui-progress" lay-filter="A" >
+                                                  <div class="layui-progress-bar" lay-percent="0%"></div>
+                                            </div> -->
+                          </div>
+                        </div>
+                      </div>
+                      <div class="layui-col-xs6">
+                        <div class="layui-form-item layui-form-text">
+                          <label class="layui-form-label block">B</label>
+                          <div class="layui-input-block">
+                            <input
+                              type="text"
+                              name="B"
+                              placeholder="请输入标题"
+                              autocomplete="off"
+                              class="layui-input"
+                            />
+                            <span class="upload-container"
+                              ><i class="layui-icon"></i></span
+                            >
+                            <div class="upload-list" clickName="B"></div>
+                            <!-- <div class="layui-progress" lay-filter="B" >
+                                                  <div class="layui-progress-bar" lay-percent="0%"></div>
+                                            </div> -->
+                          </div>
+                        </div>
+                      </div>
+                      <div class="layui-col-xs6">
+                        <div class="layui-form-item layui-form-text">
+                          <label class="layui-form-label block">C</label>
+                          <div class="layui-input-block">
+                            <input
+                              type="text"
+                              name="C"
+                              placeholder="请输入标题"
+                              autocomplete="off"
+                              class="layui-input"
+                            />
+                            <span class="upload-container"
+                              ><i class="layui-icon"></i></span
+                            >
+                            <div class="upload-list" clickName="C"></div>
+                            <!-- <div class="layui-progress" lay-filter="C" >
+                                                  <div class="layui-progress-bar" lay-percent="0%"></div>
+                                            </div> -->
+                          </div>
+                        </div>
+                      </div>
+                      <div class="layui-col-xs6">
+                        <div class="layui-form-item layui-form-text">
+                          <label class="layui-form-label block">D</label>
+                          <div class="layui-input-block">
+                            <input
+                              type="text"
+                              name="D"
+                              placeholder="请输入标题"
+                              autocomplete="off"
+                              class="layui-input"
+                            />
+                            <span class="upload-container"
+                              ><i class="layui-icon"></i></span
+                            >
+                            <div class="upload-list" clickName="D"></div>
+                            <!-- <div class="layui-progress" lay-filter="D" >
+                                                  <div class="layui-progress-bar" lay-percent="0%"></div>
+                                            </div> -->
+                          </div>
+                        </div>
+                      </div>
+                      <div class="layui-col-xs6">
+                        <div class="layui-form-item layui-form-text">
+                          <label class="layui-form-label block">E</label>
+                          <div class="layui-input-block">
+                            <input
+                              type="text"
+                              name="E"
+                              placeholder="请输入标题"
+                              autocomplete="off"
+                              class="layui-input"
+                            />
+                            <span class="upload-container"
+                              ><i class="layui-icon"></i></span
+                            >
+                            <div class="upload-list" clickName="E"></div>
+                            <!-- <div class="layui-progress" lay-filter="E" >
+                                                  <div class="layui-progress-bar" lay-percent="0%"></div>
+                                            </div> -->
+                          </div>
+                        </div>
+                      </div>
+                      <div class="layui-col-xs6">
+                        <div class="layui-form-item layui-form-text">
+                          <label class="layui-form-label block">F</label>
+                          <div class="layui-input-block">
+                            <input
+                              type="text"
+                              name="F"
+                              placeholder="请输入标题"
+                              autocomplete="off"
+                              class="layui-input"
+                            />
+                            <span class="upload-container"
+                              ><i class="layui-icon"></i></span
+                            >
+                            <div class="upload-list" clickName="F"></div>
+                            <!-- <div class="layui-progress" lay-filter="F" >
+                                                  <div class="layui-progress-bar" lay-percent="0%"></div>
+                                            </div> -->
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="layui-form-item layui-form-text">
+                      <label class="layui-form-label block">答案</label>
+                      <div class="layui-input-block">
+                        <input
+                          type="text"
+                          id="radio"
+                          autocomplete="off"
+                          name="answer"
+                          placeholder="请选择答案"
+                          readonly="“readonly”"
+                          class="layui-input"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div
+                    class="layui-form-item layui-form-text name"
+                    name="checkout"
+                  >
+                    <label class="layui-form-label block">选项</label>
+                    <div class="layui-row" id="option">
+                      <div class="layui-col-xs6">
+                        <div class="layui-form-item layui-form-text">
+                          <label class="layui-form-label block">A</label>
+                          <div class="layui-input-block">
+                            <input
+                              type="text"
+                              name="A"
+                              placeholder="请输入标题"
+                              autocomplete="off"
+                              class="layui-input"
+                            />
+                            <span class="upload-container"
+                              ><i class="layui-icon"></i></span
+                            >
+                            <div class="upload-list" clickName="A"></div>
+                            <!-- <div class="layui-progress" lay-filter="A" >
+                                                  <div class="layui-progress-bar" lay-percent="0%"></div>
+                                            </div> -->
+                          </div>
+                        </div>
+                      </div>
+                      <div class="layui-col-xs6">
+                        <div class="layui-form-item layui-form-text">
+                          <label class="layui-form-label block">B</label>
+                          <div class="layui-input-block">
+                            <input
+                              type="text"
+                              name="B"
+                              placeholder="请输入标题"
+                              autocomplete="off"
+                              class="layui-input"
+                            />
+                            <span class="upload-container"
+                              ><i class="layui-icon"></i></span
+                            >
+                            <div class="upload-list" clickName="B"></div>
+                            <!-- <div class="layui-progress" lay-filter="B" >
+                                                  <div class="layui-progress-bar" lay-percent="0%"></div>
+                                            </div> -->
+                          </div>
+                        </div>
+                      </div>
+                      <div class="layui-col-xs6">
+                        <div class="layui-form-item layui-form-text">
+                          <label class="layui-form-label block">C</label>
+                          <div class="layui-input-block">
+                            <input
+                              type="text"
+                              name="C"
+                              placeholder="请输入标题"
+                              autocomplete="off"
+                              class="layui-input"
+                            />
+                            <span class="upload-container"
+                              ><i class="layui-icon"></i></span
+                            >
+                            <div class="upload-list" clickName="C"></div>
+                            <!-- <div class="layui-progress" lay-filter="C" >
+                                                  <div class="layui-progress-bar" lay-percent="0%"></div>
+                                            </div> -->
+                          </div>
+                        </div>
+                      </div>
+                      <div class="layui-col-xs6">
+                        <div class="layui-form-item layui-form-text">
+                          <label class="layui-form-label block">D</label>
+                          <div class="layui-input-block">
+                            <input
+                              type="text"
+                              name="D"
+                              placeholder="请输入标题"
+                              autocomplete="off"
+                              class="layui-input"
+                            />
+                            <span class="upload-container"
+                              ><i class="layui-icon"></i></span
+                            >
+                            <div class="upload-list" clickName="D"></div>
+                            <!-- <div class="layui-progress" lay-filter="D" >
+                                                  <div class="layui-progress-bar" lay-percent="0%"></div>
+                                            </div> -->
+                          </div>
+                        </div>
+                      </div>
+                      <div class="layui-col-xs6">
+                        <div class="layui-form-item layui-form-text">
+                          <label class="layui-form-label block">E</label>
+                          <div class="layui-input-block">
+                            <input
+                              type="text"
+                              name="E"
+                              placeholder="请输入标题"
+                              autocomplete="off"
+                              class="layui-input"
+                            />
+                            <span class="upload-container"
+                              ><i class="layui-icon"></i></span
+                            >
+                            <div class="upload-list" clickName="E"></div>
+                            <!-- <div class="layui-progress" lay-filter="E" >
+                                                  <div class="layui-progress-bar" lay-percent="0%"></div>
+                                            </div> -->
+                          </div>
+                        </div>
+                      </div>
+                      <div class="layui-col-xs6">
+                        <div class="layui-form-item layui-form-text">
+                          <label class="layui-form-label block">F</label>
+                          <div class="layui-input-block">
+                            <input
+                              type="text"
+                              name="F"
+                              placeholder="请输入标题"
+                              autocomplete="off"
+                              class="layui-input"
+                            />
+                            <span class="upload-container"
+                              ><i class="layui-icon"></i></span
+                            >
+                            <div class="upload-list" clickName="F"></div>
+                            <!-- <div class="layui-progress" lay-filter="F" >
+                                                  <div class="layui-progress-bar" lay-percent="0%"></div>
+                                            </div> -->
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="layui-form-item layui-form-text">
+                      <label class="layui-form-label block">答案</label>
+                      <div class="layui-input-block">
+                        <input
+                          type="text"
+                          id="checkout"
+                          autocomplete="off"
+                          name="answer"
+                          placeholder="请选择答案"
+                          readonly="“readonly”"
+                          class="layui-input"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div
+                    class="layui-form-item layui-form-text name"
+                    name="boolean"
+                  >
+                    <div class="layui-form-item">
+                      <label class="layui-form-label block">答案</label>
+                      <div class="layui-input-block">
+                        <input
+                          type="radio"
+                          name="answer"
+                          autocomplete="off"
+                          value="true"
+                        /><span
+                          ><i
+                            class="layui-icon layui-icon-ok"
+                            style="
+                              font-size: 24px;
+                              position: absolute;
+                              left: 25px;
+                              top: 5px;
+                            "
+                          ></i
+                        ></span>
+                        <input
+                          type="radio"
+                          name="answer"
+                          autocomplete="off"
+                          value="false"
+                          checked
+                        /><span
+                          ><i
+                            class="layui-icon layui-icon-close"
+                            style="
+                              font-size: 24px;
+                              position: absolute;
+                              left: 75px;
+                              top: 5px;
+                            "
+                          ></i
+                        ></span>
+                      </div>
+                    </div>
+                  </div>
+                  <div
+                    class="layui-form-item layui-form-text name"
+                    name="brief"
+                  >
+                    <div class="layui-form-item">
+                      <label class="layui-form-label block">答案</label>
+                      <!--                                        <p><span class="block">答案</span></p>-->
+                      <textarea
+                        id="brief"
+                        autocomplete="off"
+                        placeholder="请输入内容"
+                        class="layui-textarea"
+                      ></textarea>
+                    </div>
+                  </div>
+                  <div
+                    class="layui-form-item layui-form-text name"
+                    name="practice"
+                  >
+                    <div class="layui-form-item" id="file">
+                      <label class="layui-form-label block">报告模板</label>
+                      <div class="layui-input-block">
+                        <form
+                          action=""
+                          id="form"
+                          method="post"
+                          enctype="multipart/form-data"
+                        >
+                          <input type="file" name="upfile" id="upfile" />
+                          <input type="button" value="上传" id="btn" />
+                        </form>
+                      </div>
+                      <div class="upload-list"></div>
+                    </div>
+                    <div class="layui-form-item" id="url">
+                      <label class="layui-form-label block">参考答案</label>
+                      <div class="layui-input-block">
+                        <input
+                          type="text"
+                          autocomplete="off"
+                          name="answer"
+                          class="layui-input"
+                          style="display: none"
+                        />
+                        <span class="upload-container" style="line-height: 36px"
+                          ><i class="layui-icon"></i></span
+                        >
+                      </div>
+                      <div class="upload-list" clickName="answer"></div>
+                    </div>
+                    <div class="layui-form-item" id="text">
+                      <label class="layui-form-label block">答案</label>
+                      <textarea
+                        id="practice"
+                        autocomplete="off"
+                        placeholder="请输入内容"
+                        class="layui-textarea"
+                      ></textarea>
+                    </div>
+                  </div>
+                  <div class="layui-form-item layui-form-text name" name="fill">
+                    <div class="layui-form-item">
+                      <label class="layui-form-label block">答案</label>
+                      <div id="answer">
+                        <input
+                          type="text"
+                          name="answer"
+                          placeholder="请输入标题"
+                          autocomplete="off"
+                          class="layui-input"
+                        />
+                        <span id="add"><i class="layui-icon"></i></span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="layui-form-item layui-form-text">
+                  <p>
+                    <span class="layui-inline">解析:</span>
+                    在下面的输入框内输入题目解析
+                  </p>
+                  <textarea
+                    name="analysis"
+                    placeholder="请输入内容"
+                    class="layui-textarea"
+                  ></textarea>
+                  <span class="upload-container"
+                    ><i class="layui-icon"></i></span
+                  >
+                  <div class="upload-list" clickName="analysis"></div>
+                </div>
+              </div>
+              <div class="layui-form-item">
+                <div class="layui-input-block">
+                  <button
+                    type="submit"
+                    class="layui-btn"
+                    lay-submit=""
+                    lay-filter="add"
+                  >
+                    立即提交
+                  </button>
+                  <button
+                    type="reset"
+                    class="layui-btn layui-btn-primary"
+                    id="reset"
+                  >
+                    重置
+                  </button>
+                  <!-- <button
+                    class="btn btn-primary"
+                    id="back"
+                  > -->
+                    <a id="back" href="./questionList.html">返回</a>
+                  <!-- </button> -->
+                  
+                </div>
+              </div>
+            </div>
+          </form>
+        </div>
+      </fieldset>
+
+      <button id="picker" style="display: none">
+        <span>点击上传文件</span>
+      </button>
+
+      <div id="img">
+        <div class="img_content">
+          <img src="" alt="" />
+        </div>
+      </div>
+    </div>
+
+    <script src="../../js/constant.js"></script>
+    <script
+      type="text/javascript"
+      src="../../js/libs/jquery-3.3.1.min.js"
+    ></script>
+    <script
+      type="text/javascript"
+      src="../../js/plugin/webuploader/zwUploader/webuploader.js"
+    ></script>
+    <script type="text/javascript" src="../../js/jq.js"></script>
+    <script
+      type="text/javascript"
+      src="../../js/plugin/bootstrapvalidator/bootstrapValidator.min.js"
+    ></script>
+    <script type="text/javascript" src="../../js/common.js"></script>
+    <script type="text/javascript" src="../../layui/layui-2.6.js"></script>
+    <script type="text/javascript">
+    let updateData,updateId
+    (function($){
+        initData();
+        updateData = {
+            type:'', // 题目类型
+            directId:'', // 情报方向
+            difficulty:'', // 难度
+            question:{text:'',url:[]}, // 题干
+            options:'', // 选项
+            analysis:{text:'',url:[]}, //   题目解析
+            answer:{text:'',url:[]}, // 答案
+            errorText:''//错误原因（批量导入错误的试题原因）
+        }
+        function initData(){
+            console.log(getUrlParam("id"),getUrlParam("id"))
+            let url = getUrlParam("flag") == 'true' ? "/api-e/questionId" : "/api-e/question/error";
+            let id = getUrlParam("id")
+            updateId = id
+            $.ajax({
+                type: 'GET',
+                url: domainName + url,
+                data:{
+                    id
+                },
+                success : function(data) {
+                    // 获取成功数据之后给每个地方设置值
+                    let resultData = data.data
+                    updateData.type = resultData.type 
+                    updateData.errorText = resultData.errorText 
+                    initPaperType(String(updateData.type))
+                    updateData.kpid = resultData.kpId
+                    
+                    console.log($('#treeSelect').val())
+                    updateData.directId = resultData.directId
+                    updateData.difficulty = resultData.difficulty
+                    setInputYuan(updateData.difficulty)
+                    updateData.question = JSON.parse(resultData.question)
+                    $("textarea[name='question']").val(updateData.question.text)
+                    if(updateData.question.url){
+                        setInitFile('question',updateData.question.url,resultData.fileAddr)
+                    }
+                    updateData.options = JSON.parse(resultData.options)
+                    for(let i in updateData.options){
+                        console.log(i,updateData.options[i].url)
+                        if(updateData.options[i].text){
+                            $("input[name=" + i +"]").val(updateData.options[i].text)
+                        }
+                        if(updateData.options[i].url){
+                            setInitFile(i,updateData.options[i].url,resultData.fileAddr)
+                        }
+                    }
+                    updateData.analysis = JSON.parse(resultData.analysis)
+                    $("textarea[name='analysis']").val(updateData.analysis.text)
+                    if(updateData.analysis.url){
+                        setInitFile('analysis',updateData.analysis.url,resultData.fileAddr)
+                    }
+                    updateData.answer = JSON.parse(resultData.answer)
+                    
+                    if(updateData.type == '1'){
+                        $("#radio").attr({ value: updateData.answer.text })
+                        $('div[name="radio"]').find("input[name=" + updateData.answer.text + "]").parent().parent().children(":first").addClass('choice')
+                    } else if(updateData.type == '2'){
+                        $("#checkout").attr({ value: updateData.answer.text })
+                        let newArr = updateData.answer.text.split(',')
+                        for(let i in newArr){
+                            $('div[name="checkout"]').find("input[name=" + newArr[i] + "]").parent().parent().children(":first").addClass('choice')
+                        }
+                    } else if (updateData.type == '3') {
+                        $(".layui-input-block").find('input[value="'+ updateData.answer.text +'"]').attr('checked',true)
+                    } else if(updateData.type == '4'){
+                        let str = ''
+                        if(updateData.answer.fill){
+                            for(let i in updateData.answer.fill){
+                                str += (updateData.answer.fill[i] + " ")
+                            }
+                        } else if(updateData.answer){
+                          for(let i in updateData.answer){
+                            str += (updateData.answer[i] + " ")
+                          }
+                        }
+                        //  2021/7/29 填空题答案为空问题 格式修改
+                        
+                        $('div[name="fill"]').find('input[name="answer"]').val(str)
+                    } else if(updateData.type == '5' || updateData.type == '6'){
+                        $('textarea[id=brief]').val(updateData.answer.text)
+                    } else if(updateData.type == '7'){
+                        $('textarea[id=practice]').val(updateData.answer.text)
+                    } else if(updateData.type == '8'){
+                        setInitFile('answer',updateData.answer.url,resultData.fileAddr)
+                    }
+                }
+            })
+        }
+    })(jQuery)
+    // 给难度值设置默认值
+    var setInputYuan = function (difficulty){
+        var input = document.getElementById("input");
+        var tiao = document.getElementById("tiao");
+        var yuan = document.getElementById("yuan");
+        var jindu = document.getElementById("jindu");
+        var tiaoW = tiao.offsetWidth;
+        var max = tiao.offsetWidth - yuan.offsetWidth; //宽度的差值
+        var moveX = Math.min(max,max*difficulty); //超过总宽度取最大宽
+        var value = updateData.difficulty
+        yuan.style.marginLeft = Math.max(0, moveX) + "px";
+        jindu.style.width = moveX + "px";
+        difficulty = value === 0 ? 0.1 : value;
+        console.log(difficulty,'difficulty')
+        if (value > 0 && value < 0.2) {
+            input.value = "简单";
+        } else if (value >= 0.2 && value < 0.4) {
+            input.value = "一般";
+        } else if (value >= 0.4 && value < 0.6) {
+            input.value = "中等";
+        } else if (value >= 0.6 && value < 0.8) {
+            input.value = "复杂";
+        } else if (value >= 0.8 && value <= 1) {
+            input.value = "困难";
+        }
+    }
+    // 设置初始文件
+    function setInitFile(name,fileUrlList,fileAddr){
+        if('ABCDEF'.indexOf(name) != -1){
+            for(let i in fileUrlList){
+                var html =
+                    '<div class="upload-item"><span id="fileName" class="fileName" fileAddr="' + fileAddr +'" fileUrl="' + fileUrlList[i] +'">文件名：' +
+                        fileUrlList[i] +
+                    '</span><span class="del-btn" data-url="'+ createServiceId(fileUrlList[i]) +'">删除</span></div>';
+                $("input[name=" + name + "]").siblings('.upload-list').append(html);
+            }
+            if (!urlobj.options) {
+              urlobj.options = {};
+            }
+            if (!urlobj.options[name]) {
+              urlobj.options[name] = [];
+            }
+            urlobj.options[name] = fileUrlList
+        }else if(name == 'answer'){
+            for(let i in fileUrlList){
+                var html =
+                    '<div class="upload-item"><span id="fileName" class="fileName" fileAddr="' + fileAddr +'" fileUrl="' + fileUrlList[i] +'">文件名：' +
+                        fileUrlList[i] +
+                    '</span><span class="del-btn" data-url="'+ createServiceId(fileUrlList[i]) +'">删除</span></div>';
+                $("div[name='practice']").find('.upload-list').append(html);
+            }  
+            if (urlobj[name] == undefined) {
+                urlobj[name] = [];
+            }
+            urlobj[name] = fileUrlList
+        } else {
+            for(let i in fileUrlList){
+                var html =
+                    '<div class="upload-item"><span id="fileName" class="fileName" fileAddr="' + fileAddr +'"  fileUrl="' + fileUrlList[i] +'">文件名：' +
+                        fileUrlList[i] +
+                    '</span><span class="del-btn" data-url="'+ createServiceId(fileUrlList[i]) +'">删除</span></div>';
+                $("textarea[name=" + name + "]").siblings('.upload-list').append(html)
+            }
+            if (urlobj[name] == undefined) {
+                urlobj[name] = [];
+            }
+            urlobj[name] = fileUrlList
+        }
+        
+        // for(let i in fileUrlList){
+        //     var html =
+        //         '<div class="upload-item"><span id="fileName">文件名：' +
+        //             fileUrlList[i] +
+        //         '</span><span class="del-btn">删除</span></div>';
+        //     if('ABCDEF'.indexOf(name)){
+        //         $("input[name=" + name + "]").siblings('.upload-list').append(html);
+        //     } else {
+        //         $("textarea[name=" + name + "]").siblings('.upload-list').append(html)
+        //     }
+            
+        // }
+        
+    }
+    // 试题类型初始化
+    function initPaperType(value){
+        switch (value) {
+            case "1":
+              $("#content").find(".name[name='radio']").show();
+              $("#content").find(".name[name='radio']").siblings().hide();
+              break;
+            case "2":
+              $("#content").find(".name[name='checkout']").show();
+              $("#content").find(".name[name='checkout']").siblings().hide();
+              break;
+            case "3":
+              $("#content").find(".name[name='boolean']").show();
+              $("#content").find(".name[name='boolean']").siblings().hide();
+              break;
+            case "4":
+              $("#content").find(".name[name='fill']").show();
+              $("#content").find(".name[name='fill']").siblings().hide();
+              break;
+            case "5":
+              $("#content").find(".name[name='brief']").show();
+              $("#content").find(".name[name='brief']").siblings().hide();
+              break;
+            case "6":
+              $("#content").find(".name[name='brief']").show();
+              $("#content").find(".name[name='brief']").siblings().hide();
+              break;
+            case "7":
+              $("#text").show();
+              $("#file").show();
+              $("#url").hide();
+
+              $("#content").find(".name[name='practice']").show();
+              $("#content").find(".name[name='practice']").siblings().hide();
+              break;
+            case "8":
+              $("#text").hide();
+              $("#file").hide();
+              $("#url").show();
+              $("#content").find(".name[name='practice']").show();
+              $("#content").find(".name[name='practice']").siblings().hide();
+              break;
+          }
+    }
+      layui.config({
+        base: "../../layui/lay/modules/",
+      });
+      var kpid = 53;
+      var difficulty =   0.1;
+      layui.use("form", function () {
+        var form = layui.form;
+        //表单校验
+        form.verify({
+          title: function (value) {
+            if (value.length < 5) {
+              return "标题至少得5个字符啊";
+            }
+          },
+          content: function (value) {
+            layedit.sync(editIndex);
+          },
+        });
+
+        //试题类型选择
+        form.on("select(type)", function (data) {
+            initPaperType(data.value)
+        });
+        getSelect();
+        form.on("submit(add)", function (data) {
+          //添加
+          var obj = {
+            modelUrl: "",
+          };
+          var options = {};
+          for (item in data.field) {
+            if (item === "modelUrl") {
+              obj.modelUrl = urlobj[item];
+              continue;
+            }
+            if ("ABCDEF".includes(item)) {
+              if ($("#type").val() == "1" || $("#type").val() == "2") {
+                options[item] = {
+                  text: data.field[item],
+                  url: urlobj.options ? urlobj.options[item] : [],
+                };
+              }
+            } else {
+              obj[item] = data.field[item];
+            }
+            if (item === "question" || item === "analysis") {
+              var js = {
+                text: data.field[item],
+                url: urlobj[item] ? urlobj[item] : [],
+              };
+              // if (item === "question") {
+              //   if ($("#service").val() !== "") {
+              //     js.url.push($("#service").val());
+              //   }
+              // }
+              obj[item] = JSON.stringify(js);
+            }
+            if (item === "answer") {
+              var answer = {
+                text: "",
+                url: "",
+              };
+              if ($("#type").val() == "1") {
+                answer.text = $("#radio").val();
+              }
+              if ($("#type").val() == "2") {
+                answer.text = $("#checkout").val();
+              }
+              if ($("#type").val() == "3") {
+                answer.text = $(".layui-input-block")
+                  .find("[name='answer']:checked")
+                  .val();
+              }
+              if ($("#type").val() == "4") {
+                answer.fill = {};
+                $("#answer")
+                  .children("input")
+                  .each(function (index) {
+                    options["edit" + (index + 1)] = "";
+                    answer.fill["edit" + (index + 1)] = $(this).val();
+                  });
+              }
+              if ($("#type").val() == "5" || $("#type").val() == "6") {
+                answer.text = $("#brief").val();
+              }
+              if ($("#type").val() == "7") {
+                answer.text = $("#practice").val();
+              }
+              if ($("#type").val() == "8") {
+                answer.text = "";
+                answer.url = urlobj.answer;
+              }
+              obj.answer = JSON.stringify(answer);
+            }
+          }
+          if ($("#type").val() == "1") {
+            $("#options")
+              .children()
+              .each(function (index, item) {
+                options[$(item).find("input[name]").prop("name")] = {
+                  text: $(item).find("input[name]").val(),
+                  url: urlobj.options
+                    ? urlobj.options[$(item).find("input[name]").prop("name")]
+                    : [],
+                };
+              });
+          }
+
+          if (typeof options !== String) {
+            obj.options = JSON.stringify(options);
+          }
+          var title = {
+            difficulty: updateData.difficulty || difficulty,
+            errorText: updateData.errorText,
+          };
+          title.type = Number($("#type").val());
+          title.kpId = kpid;
+          title.directId = Number($("#intDirect").val());
+          add($.extend(true, obj, title));
+          return false;
+        });
+        //监听提交
+      });
+      var currentFile // 当前选择到的文件
+      $(document).ready(function () {
+        $("#text").hide();
+        $("#url").show();
+        $("#file").hide();
+        $("#content").find(".name[name='radio']").show();
+        $("#content").find(".name[name='radio']").siblings().hide();
+        document.addEventListener('change',function(e){
+          if(e.target['className'] == "webuploader-element-invisible"){
+            if(e.target.files[0].name.indexOf('.tif') != -1){
+              currentFile = e.target.files[0]
+            }
+          }
+			  })
+      });
+
+      //重置
+      $("#reset").click(function () {
+        $("#radio").attr({ value: "" });
+        $("#checkout").attr({ value: "" });
+      });
+
+      //单选多选
+      $("#options").on("click", ".block", function (e) {
+        var str = $(this).text();
+        if ($(this).hasClass("choice")) {
+          $(this).removeClass("choice");
+          $("#radio").attr({ value: "" });
+        } else {
+          $(this).addClass("choice");
+          $("#radio").attr({ value: str });
+          $(this)
+            .parent()
+            .parent()
+            .siblings()
+            .find(".block")
+            .removeClass("choice");
+        }
+      });
+      $("#option").on("click", ".block", function (e) {
+        var str = $("#checkout").val() == "" ? "" : ",";
+        if ($(this).hasClass("choice")) {
+          $(this).removeClass("choice");
+          let index = $("#checkout").val().split(",").indexOf($(this).text());
+          let arr = $("#checkout").val().split(",");
+          arr.splice(index, 1);
+          $("#checkout").attr({ value: arr.join(",") });
+        } else {
+          $(this).addClass("choice");
+
+          $("#checkout").attr({
+            value: $("#checkout").val() + str + $(this).text(),
+          });
+        }
+      });
+
+      $("#add").click(function () {
+        let html =
+          "<input type='text'     placeholder='请输入标题' autocomplete='off' class='layui-input'>";
+        $("#answer").append(html);
+      });
+
+      function add(obj) {
+        // 上传之前调用接口查看试题是否重复
+        let question = JSON.parse(obj.question).text;
+        $.ajax({
+            type: "get",
+            url: domainName + "/api-e/getRepeatQuestionBytext?text=" + question + "&id=" + Number(updateId),
+            success: function (data) {
+              if(data.data.length>0){
+                  data.data.forEach(ele => {
+                      ele.questionName = JSON.parse(ele.question).text;
+                  });
+                  initTable(obj,data.data)
+              }else{
+                submitData(obj)
+              }
+            }
+        })
+      }
+      // 重复试题弹框列表
+      function initTable(obj,data){
+          layer.open({
+              title:"当前试题与下列试题标题重复，请确认是否添加？",
+              type: 1,
+              shadeClose: true,
+              btn:['确认添加','取消'],
+              yes:function(){
+                submitData(obj)
+              },
+              btn2:function(){
+              },
+              content: '<table id="table"></table>'
+          });
+          layui.use('table',function(){
+              var table = layui.table;
+              table.render({
+                  elem:'#table',
+                  cols:[[
+                      {field:'id',title:'试题id',width:100},
+                      {field:'questionName',title:'题干',width:555},
+/*                      {field:'',title:'操作',width:100,templet:function(res){
+                          return '<a onclick="detail('+ res.id +')">查看详情</a>'
+                      }},*/
+                  ]],
+                  data:data
+              })
+          })
+      }
+      // 重复试题详情
+      function detail(id){
+          window.open(frontDeskName+'/#/detail?id=' + id)
+      }
+      function submitData(obj){
+        console.log(obj,urlobj);
+        obj.id = Number(updateId)
+        // return false
+        $.ajax({
+          type: "put",
+          url: domainName + "/api-e/updateQuestion",
+          contentType: "application/json; charset=utf-8",
+          data: JSON.stringify(obj),
+          success: function (data) {
+            if (data.code === 200) {
+              layer.msg("成功", { shift: -1, time: 1000 }, function () {
+                location.href = "questionList.html";
+              });
+            } else {
+              layer.msg("添加失败", { shift: -1, time: 1000 });
+            }
+          },
+        });
+      }
+
+      function schedule() {
+        var input = document.getElementById("input");
+        var tiao = document.getElementById("tiao");
+        var yuan = document.getElementById("yuan");
+        var jindu = document.getElementById("jindu");
+        var tiaoW = tiao.offsetWidth;
+        var isfalse = false; //控制滑动
+        yuan.onmousedown = function (e) {
+          isfalse = true;
+
+          var X = e.clientX; //获取当前元素相对于窗口的X左边
+
+          var offleft = this.offsetLeft; //当前元素相对于父元素的左边距
+
+          var max = tiao.offsetWidth - this.offsetWidth; //宽度的差值
+          document.getElementById("progressBar").onmousemove = function (e) {
+            if (isfalse == false) {
+              return;
+            }
+            
+            var changeX = e.clientX; //在移动的时候获取X坐标
+            var moveX = Math.min(max, Math.max(-2, offleft + (changeX - X))); //超过总宽度取最大宽
+            var value = Math.floor(Math.max(0, moveX / max) * 100) / 100;
+            yuan.style.marginLeft = Math.max(0, moveX) + "px";
+            jindu.style.width = moveX + "px";
+            difficulty = value === 0 ? 0.1 : value;
+            if (value > 0 && value < 0.2) {
+              input.value = "简单";
+            } else if (value >= 0.2 && value < 0.4) {
+              input.value = "一般";
+            } else if (value >= 0.4 && value < 0.6) {
+              input.value = "中等";
+            } else if (value >= 0.6 && value < 0.8) {
+              input.value = "复杂";
+            } else if (value >= 0.8 && value <= 1) {
+              input.value = "困难";
+            }
+          };
+        };
+        document.getElementById("progressBar").onmouseup = function () {
+          isfalse = false;
+        };
+
+        var minValue = 0;
+        var maxValue = 100;
+        input.onblur = function () {
+          var theV = this.value * 1;
+          if (theV > maxValue || theV < minValue) {
+            alert("输入的数值不正确");
+            input.value = "";
+            $("#jindu").style.width = "0px";
+            yuan.style.marginLeft = "0px";
+            return;
+          }
+          var xxx = (theV / 100) * tiaoW;
+          yuan.style.marginLeft = xxx + "px";
+          jindu.style.width = xxx + "px";
+        };
+      }
+      schedule();
+      function getSelect() {
+        var formdata = "dictType = 'question_type'";
+        $.ajax({
+          type: "get",
+          url: domainName + "/api-b/findDict",
+          contentType: "application/json; charset=utf-8",
+          data: { dictType: "question_type" },
+          success: function (data) {
+            data = data.reverse();
+            // var data = [{ id: 41, dictName: "实操题", dictValue: "8", dictType: "question_type", dictDescription: "题型" }
+            //     , { id: 40, dictName: "情析题", dictValue: "7", dictType: "question_type", dictDescription: "题型" }
+            //     , { id: 39, dictName: "问答题", dictValue: "6", dictType: "question_type", dictDescription: "题型" }
+            //     , { id: 38, dictName: "简答题", dictValue: "5", dictType: "question_type", dictDescription: "题型" }
+            //     , { id: 37, dictName: "填空题", dictValue: "4", dictType: "question_type", dictDescription: "题型" }
+            //     , { id: 36, dictName: "判断题", dictValue: "3", dictType: "question_type", dictDescription: "题型" }
+            //     , { id: 35, dictName: "多选题", dictValue: "2", dictType: "question_type", dictDescription: "题型" }
+            //     , { id: 34, dictName: "单选题", dictValue: "1", dictType: "question_type", dictDescription: "题型" }];
+            var html = "";
+            for (var i = 0; i < data.length; i++) {
+              html +=
+                "<option value='" +
+                data[i].dictValue +
+                "'>" +
+                data[i].dictName +
+                "</option>";
+            }
+            $("#type").prepend(html);
+            updateData.type?$("#type").val(updateData.type):''
+            layui.form.render();
+          },
+        });
+
+        $.ajax({
+          type: "get",
+          url: domainName + "/api-b/findDirectCountryAll",
+          contentType: "application/json; charset=utf-8",
+          data: null,
+          success: function (data) {
+            // var data1 = [{ id: 3, name: "美国情报方向", code: null }, { id: 2, name: "中国情报方向", code: null }
+            //     , { id: 3, name: "美国情报方向", code: null }
+            //     , { id: 2, name: "中国情报方向", code: null }];
+            var html = "<option value=''>空</option>";
+            for (var i = 0; i < data.length; i++) {
+              html +=
+                "<option value='" +
+                data[i].id +
+                "'>" +
+                data[i].name +
+                "</option>";
+            }
+            $("#intDirect").prepend(html);
+            $("#intDirect").val(updateData.directId || '')
+            layui.form.render();
+            
+          },
+        });
+
+        $.ajax({
+          type: "get",
+          url: domainName + "/api-b/knowledgepoints/all",
+          contentType: "application/json; charset=utf-8",
+          data: null,
+          success: function (data) {
+            // var data3 = [{ id: 11, pointName: "设施类", parentId: 0, describe: "设施类目标", createTime: "2021-03-08T16:00:00.000+0000" }
+            //     , { id: 12, pointName: "军用目标", parentId: 11, describe: "", createTime: "2021-03-08T16:00:00.000+0000", }
+            //     , { id: 13, pointName: "指挥控制类设施", parentId: 12, describe: "", createTime: "2021-03-08T16:00:00.000+0000", }
+            //     , { id: 14, pointName: "通讯设施", parentId: 12, describe: "", createTime: "2021-03-08T16:00:00.000+0000", }
+            //     , { id: 15, pointName: "导弹阵地", parentId: 12, describe: "", createTime: "2021-03-08T16:00:00.000+0000", }
+            //     , { id: 16, pointName: "军用机场", parentId: 12, describe: "", createTime: "2021-03-08T16:00:00.000+0000", }
+            //     , { id: 17, pointName: "军用港口", parentId: 12, describe: "", createTime: "2021-03-08T16:00:00.000+0000", }
+            //     , { id: 18, pointName: "兵营", parentId: 12, describe: "", createTime: "2021-03-08T16:00:00.000+0000", }
+            //     , { id: 19, pointName: "兵工厂", parentId: 12, describe: "", createTime: "2021-03-08T16:00:00.000+0000", }
+            //     , { id: 20, pointName: "军事院校", parentId: 12, describe: "", createTime: "2021-03-08T16:00:00.000+0000", }
+            //     , { id: 21, pointName: "储备仓库", parentId: 12, describe: "", createTime: "2021-03-08T16:00:00.000+0000", }
+            //     , { id: 22, pointName: "筑城工事", parentId: 12, describe: "", createTime: "2021-03-08T16:00:00.000+0000", }
+            //     , { id: 23, pointName: "特种用途保障场", parentId: 12, describe: "", createTime: "2021-03-08T16:00:00.000+0000", }
+            //     , { id: 24, pointName: "侦察用途保障场", parentId: 12, describe: "", createTime: "2021-03-08T16:00:00.000+0000", }]
+
+            var list = treeArrTrans(data);
+            layui.use(["customSelect"], function () {
+              var select = layui.customSelect;
+              select.render({
+                el: "treeSelect",
+                data: list,
+                type: "radio",
+                line: true,
+                id:updateData.kpid,
+                accordion: true,    
+                checked: function (obj) {
+                  kpid = obj.combData.datas.id;
+                },
+              });
+                // $("#treeSelect").val($("div[data-id="+updateData.kpid+"]").find('.layui-tree-entry').find('.layui-tree-txt').text())
+                if(updateData.kpid){
+                    kpid = updateData.kpid
+                    $("#treeSelect").val($('div[data-id="' + updateData.kpid +'"]').find('>.layui-tree-entry').find('.layui-tree-txt').text())
+                }
+                
+            });
+          },
+        });
+      }
+      function findChildren(list,id){
+        var str = null
+        for(var i = 0,len = list.length; i < len; i++){
+            if(list[i].id == id){
+                str = list[i].title
+                return str
+                break
+            } else if(list[i].children.length){
+                findChildren(list[i].children,id)
+            }
+        }
+      }
+      var fileName,
+        clickDom,
+        clickName,
+        urlobj = {},
+        upload_this;
+      var flag;
+
+      $("#btn").click(function () {
+        var formData = new FormData();
+        formData.append("md5",'3r2ew12wr1ew2r1r');
+        formData.append("file", $("#upfile")[0].files[0]);
+        $.ajax({
+          type: "post",
+          url: domainName + "/api-e/weboffice/uploadFile",
+          data: formData,
+          contentType:false,
+          processData:false,
+          async: true, // 同步
+          timeout: 1000, // todo 超时的话，只能认为该分片未上传过
+        }).then(function (res) {
+          if(!res){
+            layer.msg("删除失败");
+          }
+          clickName = "modelUrl";
+          res = createServiceId(res)
+          upload_this = clickDom = $("#upfile").parent().siblings(".upload-list");
+          var html =
+            '<div class="upload-item"><span id="fileName">文件名：' +
+            $("#upfile").val() +
+            '</span><span data-url="' +
+            res +
+            '" data-file_id="' +
+            "3r2ew12wr1ew2r1r" +
+            '" class="btn-delete">删除</span></div>';
+          upload_this.append(html);
+          urlobj["modelUrl"] = "";
+          urlobj["modelUrl"] = res;
+          $("#upfile").val("");
+        });
+      });
+      $(".upload-container").click(function (event) {
+        clickName = $(this).prev().attr("name");
+        if (clickName === "analysis" || clickName === "question") {
+          upload_this = $(this).siblings(".upload-list");
+          clickDom = upload_this;
+        } else if (clickName === "modelUrl") {
+          upload_this = $(this).parent().siblings(".upload-list");
+          clickDom = upload_this;
+        } else if ("ABCDEF".includes(clickName)) {
+          upload_this = $(this).siblings(".upload-list");
+          clickDom = upload_this;
+        } else {
+          upload_this = $(this).parent().siblings(".upload-list");
+          clickDom = upload_this;
+        }
+        $("#picker").find("input").click();
+      });
+
+
+
+      // 试卷修改的图片预览
+    //   $(".upload-list").on("click", ".upload-item .fileName", function () {
+    //       console.log($(this))
+    //     window.open("http://192.168.10.203:8888/" + url);
+    //     // $('#img').show();
+    //   });
+
+
+
+      //图片预览
+      $(".upload-list").on("click", ".upload-item #fileName", function (e) {
+        var url = "";
+        var fileAddr = "";
+          if(e.target.className == 'fileName'){
+            console.log($(this).attr('fileurl'))
+            url = $(this).attr('fileurl')
+            fileAddr = $(this).attr('fileAddr')
+            window.open(fileAddr + url)
+            // window.open("http://192.168.10.203:8888/" + url)
+            return false
+          }
+        
+        if ("abcdef".includes(clickName)) {
+          url = urlobj.options[clickName];
+        } else {
+          url = urlobj[clickName];
+        }
+        window.open(fileAddr + url);
+        // window.open("http://192.168.10.203:8888/" + url);
+        // $('#img').show();
+      });
+      var currentFileUrl // 当前上传成功返回的url
+      var fileList = [];
+      //监听分块上传过程中的三个时间点
+      WebUploader.Uploader.register(
+        {
+          "before-send-file": "beforeSendFile", //整个文件上传前调用
+          "before-send": "beforeSend", //每个分片上传前
+          // "after-send-file":"afterSendFile",  //分片上传完毕
+        },
+        {
+          //时间点1：所有分块进行上传之前调用此函数
+          beforeSendFile: function (file) {
+            var deferred = WebUploader.Deferred();
+            //1、计算文件的唯一标记，用于断点续传
+            new WebUploader.Uploader()
+              .md5File(file, 0, 10 * 1024 * 1024)
+              .progress(function (percentage) {
+                $("#item1").find("p.state").text("正在读取文件信息...");
+              })
+              .then(function (val) {
+                fileMd5 = val;
+                $("#item1").find("p.state").text("成功获取文件信息...");
+                //获取文件信息后进入下一步
+                deferred.resolve();
+              });
+            return deferred.promise();
+          },
+
+          beforeSend: function (block) {
+            var block_info = new Array();
+            var task = new WebUploader.Deferred();
+            var data = {
+              md5: fileMd5,
+              chunk: block.chunk,
+              chunkSize: block.end - block.start,
+            };
+            $.ajax({
+              type: "GET",
+              url: domainName + "/api-f/split/checkFileMd5",
+              data: data,
+              cache: false,
+              async: false, // 同步
+              timeout: 1000, // todo 超时的话，只能认为该分片未上传过
+            }).then(function (data, textStatus, jqXHR) {
+              if (data.url) {
+                currentFileUrl = data.url
+                data.url = createServiceId(data.url)
+                flag = true;
+                fileName = block.file.name;
+                if(!fileList.includes(fileMd5)){
+                  var html =
+                    '<div class="upload-item"><span id="fileName">文件名：' +
+                    fileName +
+                    '</span><span data-url="' +
+                    data.url +
+                    '" data-file_id="' +
+                    fileMd5 +
+                    '" class="btn-delete">删除</span></div>';
+                  upload_this.append(html);
+                  fileList.push(fileMd5);
+                  if ("ABCDEF".includes(clickName)) {
+                    if (!urlobj.options) {
+                      urlobj.options = {};
+                    }
+                    if (!urlobj.options[clickName]) {
+                      urlobj.options[clickName] = [];
+                    }
+                    urlobj.options[clickName].push(data.url);
+                  } else {
+                    if (urlobj[clickName] == undefined) {
+                      urlobj[clickName] = [];
+                    }
+                    urlobj[clickName].push(data.url);
+                  }
+                }
+                task.reject();
+                return;
+              }
+              block_info.push(data.chunked);
+              block_info = block_info.flat();
+              // console.log("真真假假"+ block_info.includes(block.chunk) ,block_info  ,block.chunk);
+              if (block_info.includes(block.chunk)) {
+                task.reject(); // 分片存在，则跳过上传
+              } else {
+                task.resolve();
+              }
+            });
+            // this.owner.options.formData.fileMd5 = fileMd5;
+            // this.owner.options.formData.chunkSize = chunkSize;
+            return task.promise();
+          },
+        }
+      );
+      var curDate
+      var uploader = WebUploader.create({
+        auto: true, // 选完文件后，是否自动上传。
+        swf: "../../js/plugin/webuploader/zwUploader/js/Uploader.swf", // swf文件路径
+        server: domainName + "/api-f/split/chunkUpload", // 文件接收服务端。
+        dnd: ".upload-container",
+        pick: "#picker", // 内部根据当前运行是创建，可能是input元素，也可能是flash. 这里是div的id
+        multiple: true, // 选择多个
+        chunked: true, // 开起分片上传。
+        threads: 1, // 上传并发数。允许同时最大上传进程数,并发不能设置多个，否则文件顺序会乱
+        method: "POST", // 文件上传方式，POST或者GET。
+        // fileSizeLimit: 1024*1024*100*100, //验证文件总大小是否超出限制, 超出则不允许加入队列。
+        // fileSingleSizeLimit: 1024*1024*100, //验证单个文件大小是否超出限制, 超出则不允许加入队列。
+        fileVal: "upload", // [默认值：'file'] 设置文件上传域的name。
+        chunkSize: 5 * 1024 * 1024, //分片大小5M,这里设置成固定值
+      });
+
+      uploader.on("fileQueued", function (file) {
+        // 选中文件时要做的事情，比如在页面中显示选中的文件并添加到文件列表，获取文件的大小，文件类型等
+        // console.log(file.ext) // 获取文件的后缀
+        // console.log(file.size) // 获取文件的大小
+        // console.log(file.name);
+        // fileName = file.name;
+        // var html = '<div class="upload-item"><span>文件名：'+file.name+'</span><span data-file_id="'+file.id+'" class="btn-delete">删除</span><span data-file_id="'+file.id+'" class="btn-retry">重试</span><div class="percentage '+file.id+'" style="width: 0%;"></div></div>';
+        // upload_this.append(html);
+        curDate = new Date().getTime()
+      });
+      //绑定uploadBeforeSend事件来给每个独立的文件添加参数
+      uploader.on("uploadBeforeSend", function (block, data) {
+        //文件md5用来判断文件是否上传过，已经上传过则直接秒传（未上传完成直接断点续传）
+        (data.fileMd5 = fileMd5), (data.chunkSize = block.end - block.start);
+        data.chunk = block.chunk;
+      });
+
+      uploader.on("uploadProgress", function (file, percentage) {
+        layui.use("element", function () {
+          var $ = layui.$,
+            element = layui.element;
+          element.progress("answer", Math.floor(percentage * 100) + "%");
+        });
+      });
+
+      uploader.on("uploadSuccess", function (file, response) {
+        if(flag && file.name.indexOf('.tif') != -1){
+          clip(currentFileUrl,file)
+        }
+        var data = {
+          md5: fileMd5,
+          fileName: file.name,
+        };
+        if (flag) {
+          flag = false;
+          return;
+        }
+
+        $.ajax({
+          type: "GET",
+          url: domainName + "/api-f/split/saveFile",
+          data: data,
+          cache: false,
+          async: false, // 同步
+          timeout: 1000, // todo 超时的话，只能认为该分片未上传过
+        }).then(function (data, textStatus, jqXHR) {
+          if(file.name.indexOf('.tif') != -1){
+            clip(data, file)
+          }
+          fileName = file.name;
+          data = createServiceId(data)
+          if(!fileList.includes(fileMd5)){
+            var html =
+              '<div class="upload-item"><span id="fileName">文件名：' +
+              file.name +
+              '</span><span data-url="' +
+              data +
+              '" data-file_id="' +
+              fileMd5 +
+              '" class="btn-delete">删除</span></div>';
+            upload_this.append(html);
+            fileList.push(fileMd5);
+            //todo:这里我会返回一个路径
+            if ("ABCDEF".includes(clickName)) {
+              if (!urlobj.options) {
+                urlobj.options = {};
+              }
+              if (!urlobj.options[clickName]) {
+                urlobj.options[clickName] = [];
+              }
+              urlobj.options[clickName].push(data);
+            } else {
+              if (urlobj[clickName] == undefined) {
+                urlobj[clickName] = [];
+              }
+              urlobj[clickName].push(data);
+            }
+
+          }
+        });
+      });
+
+      uploader.on("uploadError", function (file,res) {
+        layer.msg("文件上传失败！");
+        // console.log(file.id+'upload error')
+      });
+
+      // 真删除
+      $(".upload-list").on(
+        "click",
+        ".upload-item .btn-delete,.del-btn",
+        function (event) {
+            url = $(this).data("url");
+            // 修改试卷时候假删除
+            if(event.target.className == 'del-btn'){
+                clickName = $(this).parent().parent().attr('clickname')
+                if ("ABCDEF".includes(clickName)) {
+                  index = urlobj.options[clickName].indexOf(url);
+                  urlobj.options[clickName].splice(index, 1);
+                }else {
+                  index = urlobj[clickName].indexOf(url);
+                  urlobj[clickName].splice(index, 1);
+                }
+                $(this).parent().remove();
+                layer.msg("删除成功", { time: 1000 });
+                return false
+            }
+          // 从文件队列中删除某个文件id
+          file_id = $(this).data("file_id");
+          clickDom = $(this).parent().parent().siblings("[name]").attr("name");
+          if (!clickName) {
+            clickDom = $(this)
+              .parent()
+              .parent()
+              .siblings(".layui-input-block")
+              .find("[name]")
+              .attr("name");
+          }
+          var _this = $(this);
+          $.ajax({
+            type: "delete",
+            url: domainName + "/api-f/split/deleteFile/" + file_id,
+            contentType: "application/json; charset=utf-8",
+            data: null,
+            success: function (data) {
+              if (data.code === "200") {
+                if ("ABCDEF".includes(clickName)) {
+                  index = urlobj.options[clickName].indexOf(url);
+                  urlobj.options[clickName].splice(index, 1);
+                }else {
+                  index = urlobj[clickName].indexOf(url);
+                  urlobj[clickName].splice(index, 1);
+                }
+                _this.parent().remove();
+                layer.msg("删除成功", { time: 1000 });
+              } else {
+                layer.msg("删除失败");
+              }
+            },
+          });
+        }
+      );
+
+      $(".upload-list").on("click", ".btn-retry", function () {
+        uploader.retry($(this).data("file_id"));
+      });
+
+      uploader.on("uploadComplete", function (file) {
+        // console.log(uploader.getFiles());
+      });
+
+      //图片查看
+      $("#img").click(function (e) {
+        $(this).hide();
+      });
+      $(".img_content").click(function (e) {
+        e.stopPropagation();
+      });
+      // 获取图片切图
+      function clip (fileName,file){
+        if(fileName == ""){
+          return 
+        }
+        fileName = fileName.substr(fileName.indexOf('/M00/')+5)
+        serviceId = curDate + fileName.substring(fileName.lastIndexOf('/')+1,fileName.indexOf('.tif'))
+        $.ajax({
+          type: "post",
+          url: clipName + "/clip",
+          data:JSON.stringify({
+              "path":"/root/docker/fastdfs/storage/data/"+ fileName,
+              "id":serviceId,
+              "clipCount": 4
+          }),
+          headers:{
+            "Content-Type":"application/json; charset=utf-8"
+          },
+          success: function (data) {
+            if(data.code === 1){
+              layer.msg("影像上传完成,开始自动切片", { time: 1000 });
+              transSlt(file,serviceId)
+            } else {
+              layer.msg("获取切片失败", { time: 1000 });
+            }
+            
+          }
+        })
+      }
+      
+      function createServiceId(fileName){
+        if(fileName.indexOf('.tif') != -1){
+          return curDate + fileName.substring(fileName.lastIndexOf('/')+1,fileName.indexOf('.tif'))
+        }
+        return fileName
+      }
+      // 上传影像file 生成影像缩略图
+      function transSlt (file,serviceId){
+        var formData = new FormData()
+        formData.append('file',currentFile)
+        formData.append('fileName',serviceId + '.tif')
+        $.ajax({
+          type: "post",
+          url:domainName + '/api-f/files/upload/thumbnail/image',
+          data:formData,
+          dataType:"json",
+          cache:false, // 无需缓存
+          processData:false,
+          contentType:false,
+          // headers:{
+          //   "Content-type":'multipart/from-data'
+          // },
+          success: function (data) {
+
+          }
+        })
+      }
+    </script>
+  </body>
+</html>

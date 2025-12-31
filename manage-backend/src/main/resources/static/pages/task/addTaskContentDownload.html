@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en-us" id="extr-page">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" type="text/css" media="screen" href="../../css/bootstrap.min.css">
+</head>
+<body>
+<div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+    <form class="form-horizontal" onsubmit="return false" id="form">
+        <input type="hidden" id="id" name="id">
+        <input type="hidden" id="contenttype" name="contenttype">
+        <input type="hidden" id="createtime" name="createtime">
+        <input type="hidden" id="updatetime" name="updatetime">
+        <fieldset>
+            <div class="form-group">
+                <label class="col-md-2 control-label">任务内容名称（下载）</label>
+                <div class="col-md-10">
+                    <input class="form-control" placeholder="任务内容名称" type="text" name="name" id="name" maxlength="320"
+                           data-bv-notempty="true"
+                           data-bv-notempty-message="任务内容名称 不能为空">
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-md-2 control-label">下载路径</label>
+                <div class="col-md-10">
+                    <input class="form-control" placeholder="下载路径" type="text" name="downPath" id="downPath" maxlength="320"
+                           data-bv-notempty="true"
+                           data-bv-notempty-message="下载路径 不能为空">
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-md-2 control-label">文件所在路径</label>
+                <div class="col-md-10">
+                    <input class="form-control" placeholder="文件所在路径" type="text" name="fdfsPath" id="fdfsPath" maxlength="320"
+                           data-bv-notempty="true"
+                           data-bv-notempty-message="文件所在路径 不能为空">
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-md-2 control-label">分片大小设置</label>
+                <div class="col-md-10">
+                    <input class="form-control" placeholder="分片大小设置" type="text" name="splitSize" id="splitSize" maxlength="320"
+                           data-bv-notempty="true"
+                           data-bv-notempty-message="分片大小设置 不能为空">
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <div class="row" align="center">
+                    <div class="col-md-12">
+                        <button class="btn btn-primary" onclick="location.href='taskContentList.html'">返回</button>
+                        <button class="btn btn-primary" type="submit" onclick="add()">
+                            <i class="fa fa-save"></i> 保存
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </fieldset>
+    </form>
+</div>
+
+<script src="../../js/constant.js"></script>
+<script type="text/javascript" src="../../js/libs/jquery-3.3.1.min.js"></script>
+<script type="text/javascript" src="../../js/jq.js"></script>
+<script type="text/javascript" src="../../js/plugin/bootstrapvalidator/bootstrapValidator.min.js"></script>
+<script type="text/javascript" src="../../js/common.js"></script>
+<script type="text/javascript" src="../../layui/layui.js"></script>
+<script type="text/javascript">
+    var ids=[];
+    layui.use('layer', function(){
+        var layer = layui.layer;
+        $("#contenttype").val(decodeURIComponent(getUrlParam("contenttype")));
+    });
+    function add() {
+        $('#form').bootstrapValidator();
+        var bootstrapValidator = $("#form").data('bootstrapValidator');
+        bootstrapValidator.validate();
+        if(!bootstrapValidator.isValid()){
+            return;
+        }
+        var formdata = $("#form").serializeObject();
+        var param = {};
+        param.fdfsPath = $("#fdfsPath").val();
+        param.downPath = $("#downPath").val();
+        param.splitSize = $("#splitSize").val();
+        formdata.param = JSON.stringify(param);
+        formdata.contenttype=getUrlParam("contenttype");
+        $.ajax({
+            type : 'post',
+            url : domainName + '/api-p/TaskContent/addTaskContent',
+            contentType: "application/json; charset=utf-8",
+            data : JSON.stringify(formdata),
+            success : function(data) {
+                layer.msg("成功", {shift: -1, time: 1000}, function(){
+                    location.href = "taskContentList.html";
+                });
+            }
+        });
+
+    }
+</script>
+</body>
+</html>

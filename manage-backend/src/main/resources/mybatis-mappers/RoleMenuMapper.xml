@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cloud.backend.dao.RoleMenuDao">
+
+	<update id="delete">
+		delete from role_menu
+		<where>
+			<if test="roleId != null">
+				and roleId = #{roleId}
+			</if>
+			<if test="menuId != null">
+				and menuId = #{menuId}
+			</if>
+		</where>
+	</update>
+
+	<select id="findMenusByRoleIds" resultType="com.cloud.backend.model.Menu">
+		select t.* from menu t
+		inner join role_menu r on r.menuId = t.id
+		where
+		r.roleId in
+		<foreach collection="roleIds" index="index" item="roleId"
+			open="(" separator="," close=")">
+			#{roleId}
+		</foreach>
+	</select>
+
+
+	<!--根据roleid查询菜单列表-->
+	<select id="getMenuByRoleIds" parameterType="list" resultType="map">
+		SELECT
+		parent_id AS parentId,
+		menu_name AS menuName,
+		pc_menu.ID,
+		m.url,
+		COALESCE ( icon, '-1' ) AS icon,
+		pc_menu.sort
+		FROM
+		pc_menu
+		inner join menu as m on m.id=menu_id
+		WHERE
+		menu_id IN ( SELECT DISTINCT menuid FROM role_menu WHERE 1 = 1 AND roleid IN
+		<foreach collection="roleIdList" item="roleId" index="index" open="(" close=")" separator=",">
+			#{roleId}
+		</foreach>
+		)
+		ORDER BY
+		sort
+	</select>
+</mapper>

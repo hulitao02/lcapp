@@ -80,7 +80,7 @@ public class LcDateUtil {
 
 
     public static void main(String[] args) {
-         getLastWeek();
+        // getLastWeek();
         //getLastMonth();
         // 按期完成率
         // 方法1：去除百分号，转换为double计算

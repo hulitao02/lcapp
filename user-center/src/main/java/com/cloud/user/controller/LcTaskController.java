@@ -393,6 +393,7 @@ public class LcTaskController {
             // 本周需要完成的工作数量（时间段内）
             q = new QueryWrapper<>();
             q.in("id", taskIdList);
+            q.ne("state", 3);
             q.ge("plan_end_time", startTime);
             q.le("plan_end_time", endTime);
             int thisWeekCount = taskDao.selectCount(q);
@@ -401,6 +402,7 @@ public class LcTaskController {
             // 时间段内需要完成的工作数量
             q = new QueryWrapper<>();
             q.in("id", taskIdList);
+            q.ne("state", 3);
             q.ge("plan_end_time", startTime);
             q.le("plan_end_time", endTime);
             int doneCount = taskDao.selectCount(q);
@@ -427,6 +429,7 @@ public class LcTaskController {
             // 时间段内未按时完成的任务数量(超时/紧急工作）
             q = new QueryWrapper<>();
             q.in("id", taskIdList);
+            q.eq("flg", 0);
             q.ne("state", 3);
             q.ge("plan_end_time", startTime);
             q.le("plan_end_time", endTime);
@@ -602,6 +605,9 @@ public class LcTaskController {
             if (deptIdListBase != null && deptIdListBase.size() > 0) {
                 deptIdList.retainAll(deptIdListBase);
             }
+            if (deptIdList.size()==0){
+                deptIdList.add(-1);
+            }
             lcTaskUserQueryWrapper.in("dept_id", deptIdList);
         } else {
             lcTaskUserQueryWrapper.eq("user_id", loginAppUser.getId());
@@ -654,6 +660,24 @@ public class LcTaskController {
         }
     }
 
+    /**
+     * @author:胡立涛
+     * @description: TODO 统计分析：工作方向分析（个人、部门）
+     * @date: 2026/01/04
+     * @param:
+     * @return: com.cloud.core.ApiResult
+     */
+    @PostMapping(value = "getTongjiTaskUser")
+    public ApiResult getTongjiTaskUser(@RequestBody Map map){
+        try {
+
+            return ApiResultHandler.buildApiResult(200, "操作成功", null);
+        }catch (Exception e){
+            e.printStackTrace();
+            return ApiResultHandler.buildApiResult(500, "操作异常", e.toString());
+        }
+    }
+
     // 任务管理、个人任务列表查询条件构造
     public QueryWrapper<LcTask> getTaskQuery(Map map) {
         // 1：部门 0：个人，默认查询个人
@@ -688,6 +712,9 @@ public class LcTaskController {
             if (deptIdListBase != null && deptIdListBase.size() > 0) {
                 deptIdList.retainAll(deptIdListBase);
             }
+            if (deptIdList.size()==0){
+                deptIdList.add(-1);
+            }
             queryWrapper.in("dept_id", deptIdList);
         } else {
             queryWrapper.eq("user_id", appUser.getId().intValue());
@@ -716,13 +743,21 @@ public class LcTaskController {
         // 状态
         String state = map.get("state") == null ? null : map.get("state").toString();
         if (state != null && !state.equals("")) {
-            q.eq("state", Integer.parseInt(state));
-            if (Integer.parseInt(state) == 3) {
-                q.ge("rel_end_time", startTime);
-                q.le("rel_end_time", endTime);
+            // 未按时完成的任务
+            if (Integer.parseInt(state) == 4) {
+                q.eq("flg", 0);
+                q.ne("state", 3);
+                q.ge("plan_end_time", startTime);
+                q.le("plan_end_time", endTime);
             } else {
-                q.ge("plan_start_time", startTime);
-                q.le("plan_start_time", endTime);
+                q.eq("state", Integer.parseInt(state));
+                if (Integer.parseInt(state) == 3) {
+                    q.ge("rel_end_time", startTime);
+                    q.le("rel_end_time", endTime);
+                } else {
+                    q.ge("plan_start_time", startTime);
+                    q.le("plan_start_time", endTime);
+                }
             }
         } else {
             q.ge("plan_start_time", startTime);

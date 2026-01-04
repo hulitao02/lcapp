@@ -96,5 +96,17 @@ public class LcDateUtil {
 //        System.out.println(percentStr1 + " - " + percentStr2 + " = " +
 //                df.format(difference) + "%");
 
+        // 获取当前时间
+        LocalDateTime now = LocalDateTime.now();
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        String endDate = sdf.format(Date.from(now.atZone(ZoneId.systemDefault()).toInstant())) + " 23:59:59";
+        System.out.println("ddd:"+endDate);
+//        String targetTime = "2026-01-15 14:30:00";
+//        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+//        LocalDateTime targetTime2 = LocalDateTime.parse(targetTime, formatter);
+//        boolean isAfter = now.isAfter(targetTime2);
+//        if (!isAfter) {
+//            System.out.println("超时");
+//        }
     }
 }

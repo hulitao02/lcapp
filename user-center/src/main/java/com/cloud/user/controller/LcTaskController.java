@@ -55,7 +55,7 @@ public class LcTaskController {
     // 上传文件存储的本地路径
     @Value("${localUrlPrefix}")
     String localUrlPrefix;
-    @Value("${file.local.path}")
+    @Value("${localFilePath}")
     private String localFilePath;
 
     /**

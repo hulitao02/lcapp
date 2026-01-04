@@ -1,9 +1,6 @@
 package com.cloud.user.config.mybatis;
 
-import ch.qos.logback.core.net.SyslogOutputStream;
-import com.alibaba.fastjson.JSON;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.cache.CacheKey;
 import org.apache.ibatis.executor.Executor;
 import org.apache.ibatis.mapping.BoundSql;
@@ -21,10 +18,6 @@ import org.apache.ibatis.reflection.wrapper.DefaultObjectWrapperFactory;
 import org.apache.ibatis.session.ResultHandler;
 import org.apache.ibatis.session.RowBounds;
 import org.springframework.stereotype.Component;
-
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
-import java.util.Objects;
 import java.util.Properties;
 
 @Component
@@ -90,10 +83,10 @@ public class MybatisInterceptor implements Interceptor {
             MetaObject metaObject = MetaObject.forObject(newMappedStatement,
                     new DefaultObjectFactory(), new DefaultObjectWrapperFactory(),
                     new DefaultReflectorFactory());
-            log.info("修改前SQL: {}",sql);
+            //log.info("修改前SQL: {}",sql);
             String newSql = resetSql(boundSql.getSql());
             metaObject.setValue("sqlSource.boundSql.sql", newSql);
-            log.info(" 修改后SQL: {}",newSql);
+            //log.info(" 修改后SQL: {}",newSql);
             args[MAPPED_STATEMENT_INDEX] = newMappedStatement;
         }
     }

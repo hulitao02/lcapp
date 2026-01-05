@@ -51,6 +51,7 @@ public class LcTaskServiceImpl extends ServiceImpl<TaskDao, LcTask> implements L
         }else if (lcTask.getState()==3){
             lcTask.setRelEndTime(new Timestamp(System.currentTimeMillis()).toString());
         }
+        lcTask.setFlg(-1);
         boolean flg=false;
         taskDao.insert(lcTask);
         if (lcTask.getUserIds() != null && !lcTask.getUserIds().isEmpty()) {
@@ -101,6 +102,8 @@ public class LcTaskServiceImpl extends ServiceImpl<TaskDao, LcTask> implements L
                 Date date = sdf.parse(task.getPlanEndTime()+" 23:59:59");
                 long planEndTime = date.getTime();
                 long relEndTime = sdf.parse(lcTask.getRelEndTime()).getTime();
+                System.out.println("--------计划结束时间："+planEndTime);
+                System.out.println("--------实际结束时间："+relEndTime);
                 // 实际完成时间晚于计划时间
                 if (relEndTime>planEndTime){
                    lcTask.setFlg(0);

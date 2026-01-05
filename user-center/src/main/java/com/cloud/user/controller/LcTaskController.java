@@ -605,7 +605,7 @@ public class LcTaskController {
             if (deptIdListBase != null && deptIdListBase.size() > 0) {
                 deptIdList.retainAll(deptIdListBase);
             }
-            if (deptIdList.size()==0){
+            if (deptIdList.size() == 0) {
                 deptIdList.add(-1);
             }
             lcTaskUserQueryWrapper.in("dept_id", deptIdList);
@@ -662,21 +662,109 @@ public class LcTaskController {
 
     /**
      * @author:胡立涛
-     * @description: TODO 统计分析：工作方向分析（个人、部门）
+     * @description: TODO 统计分析：人员工作统计（部门）
      * @date: 2026/01/04
      * @param:
      * @return: com.cloud.core.ApiResult
      */
     @PostMapping(value = "getTongjiTaskUser")
-    public ApiResult getTongjiTaskUser(@RequestBody Map map){
+    public ApiResult getTongjiTaskUser(@RequestBody Map map) {
         try {
+            String startTime = map.get("startTime").toString();
+            String endTime = map.get("endTime").toString() + " 23:59:59";
+            String deptIds = map.get("deptIds") == null ? null : map.get("deptIds").toString();
+            List<Integer> deptIdListBase = new ArrayList<>();
+            if (deptIds != null && !deptIds.equals("")) {
+                Map deptMap = new HashMap();
+                deptMap.put("deptId", Integer.parseInt(deptIds));
+                List<Map> maps = taskDao.selectLcTaskList(deptMap);
+                for (Map map1 : maps) {
+                    deptIdListBase.add(Integer.parseInt(map1.get("id").toString()));
+                }
+            }
+            LoginAppUser loginAppUser = AppUserUtil.getLoginAppUser();
 
-            return ApiResultHandler.buildApiResult(200, "操作成功", null);
-        }catch (Exception e){
+            Map m = new HashMap<>();
+            m.put("deptId", Integer.parseInt(loginAppUser.getDepartmentId().toString()));
+            List<Integer> deptIdList = new ArrayList<>();
+            List<Map> list1 = taskDao.selectLcTaskList(m);
+            if (list1 == null || list1.size() <= 0) {
+                deptIdList.add(-1);
+            } else {
+                for (Map map1 : list1) {
+                    deptIdList.add((Integer) map1.get("id"));
+                }
+            }
+            // 取有权限的部门
+            if (deptIdListBase != null && deptIdListBase.size() > 0) {
+                deptIdList.retainAll(deptIdListBase);
+            }
+            if (deptIdList.size() == 0) {
+                deptIdList.add(-1);
+            }
+            QueryWrapper<LcTask> lcTaskQueryWrapper=new QueryWrapper<>();
+            lcTaskQueryWrapper.ge("plan_start_time",startTime);
+            lcTaskQueryWrapper.le("plan_start_time",endTime);
+            List<LcTask> lcTasks = taskDao.selectList(lcTaskQueryWrapper);
+            List<Integer> taskIdList=new ArrayList<>();
+            if (lcTasks==null || lcTasks.size()==0){
+                taskIdList.add(-1);
+            }else {
+                for (LcTask lcTask:lcTasks){
+                    taskIdList.add(lcTask.getId());
+                }
+            }
+            QueryWrapper<LcTaskUser> lcTaskUserQueryWrapper = new QueryWrapper<>();
+            lcTaskUserQueryWrapper.select("user_id,count(*) as count");
+            lcTaskUserQueryWrapper.in("dept_id", deptIdList);
+            lcTaskUserQueryWrapper.in("task_id",taskIdList);
+            lcTaskUserQueryWrapper.groupBy("user_id");
+            List<Map<String, Object>> maps = taskUserDao.selectMaps(lcTaskUserQueryWrapper);
+            List<Map> rList=new ArrayList<>();
+            if (maps!=null && maps.size()>0){
+                for (Map map1:maps){
+                    AppUser user = appUserDao.selectById(Integer.parseInt(map1.get("user_id").toString()));
+                    if (user!=null){
+                        Map rMap=new HashMap();
+                        rMap.put("userId",user.getId());
+                        rMap.put("userName",user.getNickname());
+                        rMap.put("count",map1.get("count"));
+                        // 完成的任务数量
+                        //int finishCount = getCount(lcTaskQueryWrapper, Integer.parseInt(user.getId().toString()), -1, deptIdList);
+                        //rMap.put("finishCount",finishCount);
+                        // 按期完成任务数量
+                       // int finishCountTime=getCount(lcTaskQueryWrapper,Integer.parseInt(user.getId().toString()),1,deptIdList);
+                        //rMap.put("finishCountTime",finishCountTime);
+                        rList.add(rMap);
+                    }
+                }
+            }
+            return ApiResultHandler.buildApiResult(200, "操作成功", rList);
+        } catch (Exception e) {
             e.printStackTrace();
             return ApiResultHandler.buildApiResult(500, "操作异常", e.toString());
         }
     }
+
+    public int  getCount(int userId,String startTime,String endTime){
+        QueryWrapper<LcTaskUser> lcTaskUserQueryWrapper = new QueryWrapper<>();
+        lcTaskUserQueryWrapper.eq("user_id",userId);
+        List<LcTaskUser> userList = taskUserDao.selectList(lcTaskUserQueryWrapper);
+        List<Integer> taskIdList=new ArrayList<>();
+        if (userList!=null && userList.size()==0){
+            taskIdList.add(-1);
+        }else {
+            for (LcTaskUser lcTaskUser:userList){
+                taskIdList.add(lcTaskUser.getTaskId());
+            }
+        }
+        QueryWrapper<LcTask> lcTaskQueryWrapper=new QueryWrapper<>();
+        lcTaskQueryWrapper.ge("plan_start_time",startTime);
+        lcTaskQueryWrapper.le("plan_start_time",endTime);
+        lcTaskQueryWrapper.in("id",taskIdList);
+        return 1;
+    }
+
 
     // 任务管理、个人任务列表查询条件构造
     public QueryWrapper<LcTask> getTaskQuery(Map map) {
@@ -712,7 +800,7 @@ public class LcTaskController {
             if (deptIdListBase != null && deptIdListBase.size() > 0) {
                 deptIdList.retainAll(deptIdListBase);
             }
-            if (deptIdList.size()==0){
+            if (deptIdList.size() == 0) {
                 deptIdList.add(-1);
             }
             queryWrapper.in("dept_id", deptIdList);
